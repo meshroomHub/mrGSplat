@@ -2,6 +2,8 @@
 Collection of nodes to run gsplat in meshroom.
 Relies on the rez package gsplat-develop, containing an install and a modify version of nerfstudio's gsplat https://github.com/nerfstudio-project/gsplat
 
+Utilisation: rez env meshroom-develop gsplatNodes-develop
+
 # Optim nodes
 Gsplat is split in optim and render nodes.
 Use "GaussianSplattingOptim" to train the model for the target resolution.
