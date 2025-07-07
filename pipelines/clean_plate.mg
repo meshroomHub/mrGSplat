@@ -20,8 +20,7 @@
             "Meshroom2ColmapSfmConvertions": "2.0",
             "PrepareFolderForGS": "3.0",
             "StructureFromMotion": "3.3"
-        },
-        "template": true
+        }
     },
     "graph": {
         "ApplyCalibration_3": {
@@ -30,11 +29,27 @@
                 -4,
                 1023
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 15,
+                "split": 1
+            },
+            "uid": "2963cbaa8b8484d4cf72a2a89a2a66bf6a666d53",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{ImageProcessing_1.outSfMData}"
+                "input": "{ImageProcessing_1.outSfMData}",
+                "calibration": "",
+                "useJson": false,
+                "verboseLevel": "info"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
                 "color": "#575963"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}/sfmData.sfm"
             }
         },
         "CameraInit_5": {
@@ -43,6 +58,13 @@
                 -481,
                 1180
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 15,
+                "split": 1
+            },
+            "uid": "5334c61d23e067374aefcfd36b405412ffa26cdd",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "viewpoints": [
                     {
@@ -216,11 +238,27 @@
                         "undistortionParams": [],
                         "locked": false
                     }
-                ]
+                ],
+                "sensorDatabase": "${ALICEVISION_SENSOR_DB}",
+                "lensCorrectionProfileInfo": "${ALICEVISION_LENS_PROFILE_INFO}",
+                "lensCorrectionProfileSearchIgnoreCameraModel": true,
+                "defaultFieldOfView": 45.0,
+                "groupCameraFallback": "folder",
+                "rawColorInterpretation": "DCPLinearProcessing",
+                "colorProfileDatabase": "${ALICEVISION_COLOR_PROFILE_DB}",
+                "errorOnMissingColorProfile": true,
+                "viewIdMethod": "metadata",
+                "viewIdRegex": ".*?(\\d+)",
+                "verboseLevel": "info"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
                 "label": "InitShot",
                 "color": "#575963"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}/cameraInit.sfm"
             }
         },
         "ConvertSfMFormat_7": {
@@ -229,9 +267,36 @@
                 482,
                 1470
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 30,
+                "split": 1
+            },
+            "uid": "7e15c7697c8b448d55022fe32e6e948036ebe53f",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{StructureFromMotion_7.output}",
-                "fileExt": "sfm"
+                "fileExt": "sfm",
+                "describerTypes": [
+                    "dspsift"
+                ],
+                "imageWhiteList": [],
+                "views": true,
+                "intrinsics": true,
+                "extrinsics": true,
+                "structure": true,
+                "observations": true,
+                "surveys": true,
+                "verboseLevel": "info"
+            },
+            "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
+                "color": ""
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}/sfm.{fileExtValue}"
             }
         },
         "FeatureExtraction_4": {
@@ -240,13 +305,40 @@
                 201,
                 1157
             ],
+            "parallelization": {
+                "blockSize": 40,
+                "size": 15,
+                "split": 1
+            },
+            "uid": "895be8edab857b0301f7a7d4d641fb4dac2b2cda",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{ApplyCalibration_3.output}",
                 "masksFolder": "{ImageSegmentationPrompt_1.output}",
-                "maskExtension": "jpg"
+                "maskExtension": "jpg",
+                "maskInvert": false,
+                "describerTypes": [
+                    "dspsift"
+                ],
+                "describerPreset": "normal",
+                "maxNbFeatures": 0,
+                "describerQuality": "normal",
+                "contrastFiltering": "GridSort",
+                "relativePeakThreshold": 0.01,
+                "gridFiltering": true,
+                "workingColorSpace": "sRGB",
+                "forceCpuExtraction": true,
+                "maxThreads": 0,
+                "verboseLevel": "info"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
                 "color": "#575963"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}"
             }
         },
         "FeatureMatching_7": {
@@ -255,15 +347,42 @@
                 640,
                 1014
             ],
+            "parallelization": {
+                "blockSize": 20,
+                "size": 15,
+                "split": 1
+            },
+            "uid": "8d1e6cb6dd03ec3fedb3681ee4c8f131b939cf77",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{ImageMatching_5.input}",
                 "featuresFolders": "{ImageMatching_5.featuresFolders}",
                 "imagePairsList": "{ImageMatching_5.output}",
-                "describerTypes": "{FeatureExtraction_4.describerTypes}"
+                "describerTypes": "{FeatureExtraction_4.describerTypes}",
+                "photometricMatchingMethod": "ANN_L2",
+                "geometricEstimator": "acransac",
+                "geometricFilterType": "fundamental_matrix",
+                "distanceRatio": 0.8,
+                "maxIteration": 50000,
+                "geometricError": 0.0,
+                "knownPosesGeometricErrorMax": 5.0,
+                "minRequired2DMotion": -1.0,
+                "maxMatches": 0,
+                "savePutativeMatches": false,
+                "crossMatching": false,
+                "guidedMatching": false,
+                "matchFromKnownCameraPoses": false,
+                "exportDebugFiles": false,
+                "verboseLevel": "info"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
                 "label": "FeatureMatchingKeyframes",
                 "color": "#575963"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}"
             }
         },
         "FeatureMatching_9": {
@@ -272,15 +391,42 @@
                 1201,
                 1024
             ],
+            "parallelization": {
+                "blockSize": 20,
+                "size": 30,
+                "split": 2
+            },
+            "uid": "785d6917f9a8a75b00237d60c407a84826874902",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{ImageMatchingMultiSfM_4.outputCombinedSfM}",
                 "featuresFolders": "{StructureFromMotion_6.featuresFolders}",
                 "imagePairsList": "{ImageMatchingMultiSfM_4.output}",
-                "describerTypes": "{StructureFromMotion_6.describerTypes}"
+                "describerTypes": "{StructureFromMotion_6.describerTypes}",
+                "photometricMatchingMethod": "ANN_L2",
+                "geometricEstimator": "acransac",
+                "geometricFilterType": "fundamental_matrix",
+                "distanceRatio": 0.8,
+                "maxIteration": 50000,
+                "geometricError": 0.0,
+                "knownPosesGeometricErrorMax": 5.0,
+                "minRequired2DMotion": -1.0,
+                "maxMatches": 0,
+                "savePutativeMatches": false,
+                "crossMatching": false,
+                "guidedMatching": false,
+                "matchFromKnownCameraPoses": false,
+                "exportDebugFiles": false,
+                "verboseLevel": "info"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
                 "label": "FeatureMatchingFramesToKeyframes",
                 "color": "#80766f"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}"
             }
         },
         "FilterMasks_1": {
@@ -289,16 +435,35 @@
                 1393,
                 1626
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "6a14ad3f73d71ae2268466fff9ed45b2c3943f38",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "maskFolder": "{FilterMasks_6.outputFolder}",
                 "inputSfM": "{FilterMasks_6.inputSfM}",
                 "filterType": "blur",
+                "keepFilename": true,
                 "extension": "{FilterMasks_6.extension}",
+                "kernel_size": 3,
+                "kernel_shape": "rect",
+                "iterations": 1,
+                "use_of": false,
+                "smoothing_strength": 0.05,
                 "verboseLevel": "debug"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
                 "label": "Blur",
                 "color": "#C16162"
+            },
+            "outputs": {
+                "outputFolder": "{nodeCacheFolder}",
+                "masks": "{nodeCacheFolder}/<FILESTEM>.jpg"
             }
         },
         "FilterMasks_2": {
@@ -307,15 +472,35 @@
                 393,
                 1272
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "321e8a1e9eb2688c0f189d8abab606adc1a9a1b7",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "maskFolder": "{FilterMasks_3.outputFolder}",
                 "inputSfM": "{FilterMasks_3.inputSfM}",
+                "filterType": "temporal_filtering",
+                "keepFilename": true,
                 "extension": "{FilterMasks_3.extension}",
+                "kernel_size": 3,
+                "kernel_shape": "rect",
+                "iterations": 1,
+                "use_of": false,
+                "smoothing_strength": 0.05,
                 "verboseLevel": "debug"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
                 "label": "Unflicker",
                 "color": "#C16162"
+            },
+            "outputs": {
+                "outputFolder": "{nodeCacheFolder}",
+                "masks": "{nodeCacheFolder}/<FILESTEM>.jpg"
             }
         },
         "FilterMasks_3": {
@@ -324,16 +509,35 @@
                 197,
                 1272
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "f9a399273d1c91494f95f3a9469b3dd43ca2705d",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "maskFolder": "{ImageSegmentationPrompt_1.output}",
                 "inputSfM": "{ImageSegmentationPrompt_1.input}",
                 "filterType": "erosion",
+                "keepFilename": true,
                 "extension": "jpg",
+                "kernel_size": 3,
+                "kernel_shape": "rect",
+                "iterations": 1,
+                "use_of": false,
+                "smoothing_strength": 0.05,
                 "verboseLevel": "debug"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
                 "label": "Dilate",
                 "color": "#C16162"
+            },
+            "outputs": {
+                "outputFolder": "{nodeCacheFolder}",
+                "masks": "{nodeCacheFolder}/<FILESTEM>.jpg"
             }
         },
         "FilterMasks_4": {
@@ -342,16 +546,35 @@
                 590,
                 1273
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "5f4c028a4c58f9db32b075f34e84eb8f16cd1b82",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "maskFolder": "{FilterMasks_2.outputFolder}",
                 "inputSfM": "{FilterMasks_2.inputSfM}",
                 "filterType": "dilation",
+                "keepFilename": true,
                 "extension": "{FilterMasks_2.extension}",
+                "kernel_size": 3,
+                "kernel_shape": "rect",
+                "iterations": 1,
+                "use_of": false,
+                "smoothing_strength": 0.05,
                 "verboseLevel": "debug"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
                 "label": "Erode",
                 "color": "#C16162"
+            },
+            "outputs": {
+                "outputFolder": "{nodeCacheFolder}",
+                "masks": "{nodeCacheFolder}/<FILESTEM>.jpg"
             }
         },
         "FilterMasks_6": {
@@ -360,16 +583,35 @@
                 1193,
                 1622
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "e8ec0a8b27b7ad09986a861aac3ecf7af94bc3a5",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "maskFolder": "{PrepareFolderForGS_1.maskFolder}",
                 "inputSfM": "{FilterMasks_4.inputSfM}",
                 "filterType": "erosion",
+                "keepFilename": true,
                 "extension": "jpg",
+                "kernel_size": 3,
+                "kernel_shape": "rect",
+                "iterations": 1,
+                "use_of": false,
+                "smoothing_strength": 0.05,
                 "verboseLevel": "debug"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
                 "label": "Dilate",
                 "color": "#C16162"
+            },
+            "outputs": {
+                "outputFolder": "{nodeCacheFolder}",
+                "masks": "{nodeCacheFolder}/<FILESTEM>.jpg"
             }
         },
         "GaussianSplattingOptim_1": {
@@ -378,37 +620,72 @@
                 1311.0,
                 1445.0
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "15edb831482fa0a17b63dedae0fb091cfdb065b3",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
+                "rezEnvName": "gsplat-develop",
                 "sfm": "{PrepareFolderForGS_2.outputFolder}",
                 "resumeCheckpoint": "{GaussianSplattingOptim_3.model}",
                 "n_steps": 300,
                 "dataFactor": 1,
+                "custom_ckpts": false,
                 "save_steps": [
                     3000
-                ]
+                ],
+                "use_masks": true,
+                "pose_opt": false
             },
             "internalInputs": {
                 "invalidation": "new env C",
+                "comment": "",
+                "label": "",
                 "color": "#2CB9CC"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}",
+                "model": "{nodeCacheFolder}/ckpts/ckpt_299_rank0.pt"
             }
         },
         "GaussianSplattingOptim_3": {
             "nodeType": "GaussianSplattingOptim",
             "position": [
-                1122,
-                1448
+                1108,
+                1510
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "e705d4fabbf71d5910296bdcc0e41c8ccf3fbce3",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
+                "rezEnvName": "gsplat-develop",
                 "sfm": "{PrepareFolderForGS_1.outputFolder}",
+                "resumeCheckpoint": "",
                 "n_steps": 3000,
                 "dataFactor": 8,
+                "custom_ckpts": false,
                 "save_steps": [
                     3000
-                ]
+                ],
+                "use_masks": true,
+                "pose_opt": false
             },
             "internalInputs": {
                 "invalidation": "new env C",
+                "comment": "",
+                "label": "",
                 "color": "#2CB9CC"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}",
+                "model": "{nodeCacheFolder}/ckpts/ckpt_2999_rank0.pt"
             }
         },
         "GaussianSplattingRender_1": {
@@ -417,24 +694,59 @@
                 1513.0,
                 1441.0
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "6f029e489f1d95424b038b87a4032df367d6a9c3",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
+                "rezEnvName": "gsplat-maskSupport",
                 "cameras": "{GaussianSplattingOptim_1.sfm}",
-                "model": "{GaussianSplattingOptim_1.model}"
+                "model": "{GaussianSplattingOptim_1.model}",
+                "resolutionFactor": 1
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
                 "color": "#2CB9CC"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}",
+                "frames": "{nodeCacheFolder}/renders/*.jpg",
+                "render_folder": "{nodeCacheFolder}/renders"
             }
         },
         "ImageCompo_2": {
             "nodeType": "ImageCompo",
             "position": [
-                1698,
-                1436
+                1746,
+                1468
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "a01374a069dc94af3ea3e1026f4bb15d7754eea5",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "folderA": "{PrepareFolderForGS_1.outputImageFolder}",
                 "folderB": "{GaussianSplattingRender_1.render_folder}",
-                "folderMask": "{FilterMasks_1.outputFolder}"
+                "folderMask": "{FilterMasks_1.outputFolder}",
+                "rename": true
+            },
+            "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
+                "color": ""
+            },
+            "outputs": {
+                "combinedImageFolder": "{nodeCacheFolder}",
+                "frames": "{nodeCacheFolder}/*.jpg"
             }
         },
         "ImageMatchingMultiSfM_4": {
@@ -443,16 +755,36 @@
                 1016,
                 1016
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 30,
+                "split": 1
+            },
+            "uid": "f8b2293568a1ae718599d22a1299f39f9022e11c",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{StructureFromMotion_6.output}",
                 "inputB": "{KeyframeSelection_3.outputSfMDataFrames}",
                 "featuresFolders": "{StructureFromMotion_6.featuresFolders}",
                 "method": "VocabularyTree",
+                "tree": "${ALICEVISION_VOCTREE}",
+                "weights": "",
                 "matchingMode": "a/b",
-                "nbMatches": 20
+                "minNbImages": 200,
+                "maxDescriptors": 500,
+                "nbMatches": 20,
+                "nbNeighbors": 5,
+                "verboseLevel": "info"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
                 "color": "#80766f"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}/imageMatches.txt",
+                "outputCombinedSfM": "{nodeCacheFolder}/combineSfM.sfm"
             }
         },
         "ImageMatching_5": {
@@ -461,16 +793,35 @@
                 439,
                 1014
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 15,
+                "split": 1
+            },
+            "uid": "58876e90e5dcbe7ceae5521ad2a4a55539e592d1",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{KeyframeSelection_3.outputSfMDataKeyframes}",
                 "featuresFolders": [
                     "{FeatureExtraction_4.output}"
                 ],
-                "method": "Exhaustive"
+                "method": "Exhaustive",
+                "tree": "${ALICEVISION_VOCTREE}",
+                "weights": "",
+                "minNbImages": 200,
+                "maxDescriptors": 500,
+                "nbMatches": 40,
+                "nbNeighbors": 5,
+                "verboseLevel": "info"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
                 "label": "ImageMatchingKeyframes",
                 "color": "#575963"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}/imageMatches.txt"
             }
         },
         "ImageProcessing_1": {
@@ -479,9 +830,104 @@
                 -252,
                 1154
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 15,
+                "split": 1
+            },
+            "uid": "bc1b3aa8c90393ab43ef3acaa24393adf6c1b814",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{CameraInit_5.output}",
-                "extension": "jpg"
+                "inputFolders": [],
+                "metadataFolders": [],
+                "extension": "jpg",
+                "reconstructedViewsOnly": false,
+                "keepImageFilename": false,
+                "reorient": false,
+                "fixNonFinite": false,
+                "exposureCompensation": false,
+                "rawAutoBright": false,
+                "rawExposureAdjust": 0.0,
+                "lensCorrection": {
+                    "lensCorrectionEnabled": false,
+                    "geometry": false,
+                    "vignetting": false,
+                    "chromaticAberration": false
+                },
+                "scaleFactor": 1.0,
+                "maxWidth": 0,
+                "maxHeight": 0,
+                "contrast": 1.0,
+                "medianFilter": 0,
+                "fillHoles": false,
+                "sharpenFilter": {
+                    "sharpenFilterEnabled": false,
+                    "width": 3,
+                    "contrast": 1.0,
+                    "threshold": 0.0
+                },
+                "bilateralFilter": {
+                    "bilateralFilterEnabled": false,
+                    "bilateralFilterDistance": 0,
+                    "bilateralFilterSigmaSpace": 0.0,
+                    "bilateralFilterSigmaColor": 0.0
+                },
+                "claheFilter": {
+                    "claheEnabled": false,
+                    "claheClipLimit": 4.0,
+                    "claheTileGridSize": 8
+                },
+                "noiseFilter": {
+                    "noiseEnabled": false,
+                    "noiseMethod": "uniform",
+                    "noiseA": 0.0,
+                    "noiseB": 1.0,
+                    "noiseMono": true
+                },
+                "nlmFilter": {
+                    "nlmFilterEnabled": false,
+                    "nlmFilterH": 5.0,
+                    "nlmFilterHColor": 10.0,
+                    "nlmFilterTemplateWindowSize": 7,
+                    "nlmFilterSearchWindowSize": 21
+                },
+                "parFilter": {
+                    "parEnabled": false,
+                    "parRowDecimation": false
+                },
+                "outputFormat": "rgba",
+                "inputColorSpace": "AUTO",
+                "outputColorSpace": "AUTO",
+                "workingColorSpace": "Linear",
+                "rawColorInterpretation": "DCPLinearProcessing",
+                "applyDcpMetadata": false,
+                "colorProfileDatabase": "${ALICEVISION_COLOR_PROFILE_DB}",
+                "errorOnMissingColorProfile": true,
+                "useDCPColorMatrixOnly": true,
+                "doWBAfterDemosaicing": false,
+                "demosaicingAlgo": "AHD",
+                "highlightMode": 0,
+                "correlatedColorTemperature": -1.0,
+                "lensCorrectionProfileInfo": "${ALICEVISION_LENS_PROFILE_INFO}",
+                "lensCorrectionProfileSearchIgnoreCameraModel": true,
+                "storageDataType": "float",
+                "exrCompressionMethod": "auto",
+                "exrCompressionLevel": 0,
+                "jpegCompress": true,
+                "jpegQuality": 90,
+                "verboseLevel": "info"
+            },
+            "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
+                "color": ""
+            },
+            "outputs": {
+                "outSfMData": "{nodeCacheFolder}/cameraInit.sfm",
+                "output": "{nodeCacheFolder}",
+                "outputImages": "{nodeCacheFolder}/<VIEW_ID>.jpg"
             }
         },
         "ImageSegmentationPrompt_1": {
@@ -490,20 +936,41 @@
                 4,
                 1252
             ],
+            "parallelization": {
+                "blockSize": 50,
+                "size": 15,
+                "split": 1
+            },
+            "uid": "131998e4c89fecd32b055bf3f89b86e66289d752",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{ImageProcessing_1.outSfMData}",
+                "recognitionModelPath": "/s/apps/packages/mikrosVfx/multiview/imagePrompt_nnModels/1.0/models/ram_plus_swin_large_14m.pth",
+                "detectionModelPath": "/s/apps/packages/mikrosVfx/multiview/imagePrompt_nnModels/1.0/models/groundingdino_swint_ogc.pth",
+                "detectionConfigPath": "/s/apps/packages/mikrosVfx/multiview/imagePrompt_nnModels/1.0/models/GroundingDINO_SwinT_OGC.py",
+                "segmentationModelPath": "/s/apps/packages/mikrosVfx/multiview/imagePrompt_nnModels/1.0/models/sam_vit_h_4b8939.pth",
                 "prompt": "woman",
                 "synonyms": "",
                 "forceDetection": true,
                 "thresholdDetection": 0.3,
+                "bboxMargin": 0,
                 "maskInvert": true,
+                "useGpu": true,
                 "keepFilename": true,
                 "extension": "jpg",
-                "outputBboxImage": true
+                "outputBboxImage": true,
+                "verboseLevel": "info"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
                 "label": "Segmentation3",
                 "color": "#C16162"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}",
+                "masks": "{nodeCacheFolder}/<FILESTEM>.jpg",
+                "bboxes": "{nodeCacheFolder}/<FILESTEM>_bboxes.jpg"
             }
         },
         "KeyframeSelection_3": {
@@ -512,13 +979,68 @@
                 202,
                 1017
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 15,
+                "split": 1
+            },
+            "uid": "db66dabef9cc930427aea46d3de5570af0645301",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "inputPaths": [
                     "{ApplyCalibration_3.output}"
-                ]
+                ],
+                "brands": [],
+                "models": [],
+                "mmFocals": [],
+                "sensorDbPath": "${ALICEVISION_SENSOR_DB}",
+                "maskPaths": [],
+                "selectionMethod": {
+                    "useSmartSelection": true,
+                    "regularSelection": {
+                        "minFrameStep": 12,
+                        "maxFrameStep": 0,
+                        "maxNbOutFrames": 0
+                    },
+                    "smartSelection": {
+                        "pxDisplacement": 10.0,
+                        "minNbOutFrames": 40,
+                        "maxNbOutFrames": 2000,
+                        "rescaledWidthSharpness": 720,
+                        "rescaledWidthFlow": 720,
+                        "sharpnessWindowSize": 200,
+                        "flowCellSize": 90,
+                        "minBlockSize": 10
+                    }
+                },
+                "renameKeyframes": false,
+                "outputExtension": "none",
+                "storageDataType": "float",
+                "debugOptions": {
+                    "debugScores": {
+                        "exportScores": false,
+                        "csvFilename": "scores.csv",
+                        "exportSelectedFrames": false
+                    },
+                    "opticalFlowVisualisation": {
+                        "exportFlowVisualisation": false,
+                        "flowVisualisationOnly": false
+                    },
+                    "skipSharpnessComputation": false,
+                    "skipSelection": false
+                },
+                "verboseLevel": "info"
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
                 "color": "#575963"
+            },
+            "outputs": {
+                "outputFolder": "{nodeCacheFolder}",
+                "outputSfMDataKeyframes": "{nodeCacheFolder}/keyframes.sfm",
+                "outputSfMDataFrames": "{nodeCacheFolder}/frames.sfm"
             }
         },
         "Meshroom2ColmapSfmConvertions_3": {
@@ -527,8 +1049,25 @@
                 663,
                 1464
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 30,
+                "split": 1
+            },
+            "uid": "be31b26a2703124cac6a47b04ff436e9e167fab2",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{ConvertSfMFormat_7.output}"
+                "input": "{ConvertSfMFormat_7.output}",
+                "verboseLevel": "info"
+            },
+            "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
+                "color": ""
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}"
             }
         },
         "PrepareFolderForGS_1": {
@@ -537,6 +1076,13 @@
                 879,
                 1437
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "87817fd5b0fc3a4c641306ea8783fa75a96526d8",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "colmapFolder": "{Meshroom2ColmapSfmConvertions_3.output}",
                 "maskFolder": "{FilterMasks_4.outputFolder}",
@@ -546,10 +1092,19 @@
                     "8",
                     "1"
                 ],
-                "selectedScale": "8"
+                "selectedScale": "8",
+                "verboseLevel": "info",
+                "forcePinhole": true
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
                 "color": "#E35C03"
+            },
+            "outputs": {
+                "outputFolder": "{nodeCacheFolder}",
+                "outputImageFolder": "{nodeCacheFolder}/images"
             }
         },
         "PrepareFolderForGS_2": {
@@ -558,6 +1113,13 @@
                 883.0,
                 1319.0
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "d6b9250d408f9ef7975bc3f6673855d63e9f2644",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "colmapFolder": "{Meshroom2ColmapSfmConvertions_3.output}",
                 "maskFolder": "{FilterMasks_4.outputFolder}",
@@ -566,10 +1128,20 @@
                     "4",
                     "8",
                     "1"
-                ]
+                ],
+                "selectedScale": "1",
+                "verboseLevel": "info",
+                "forcePinhole": true
             },
             "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
                 "color": "#E35C03"
+            },
+            "outputs": {
+                "outputFolder": "{nodeCacheFolder}",
+                "outputImageFolder": "{nodeCacheFolder}/images"
             }
         },
         "StructureFromMotion_6": {
@@ -578,6 +1150,13 @@
                 839,
                 1014
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 15,
+                "split": 1
+            },
+            "uid": "4610a3cfa9f74201343027ff96dcde39f686a462",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{FeatureMatching_7.input}",
                 "featuresFolders": "{FeatureMatching_7.featuresFolders}",
@@ -585,16 +1164,49 @@
                     "{FeatureMatching_7.output}"
                 ],
                 "describerTypes": "{FeatureMatching_7.describerTypes}",
+                "localizerEstimator": "acransac",
+                "observationConstraint": "Scale",
+                "localizerEstimatorMaxIterations": 50000,
+                "localizerEstimatorError": 0.0,
                 "lockScenePreviouslyReconstructed": true,
+                "useLocalBA": true,
+                "localBAGraphDistance": 1,
+                "nbFirstUnstableCameras": 30,
+                "maxImagesPerGroup": 30,
+                "bundleAdjustmentMaxOutliers": 50,
+                "maxNumberOfMatches": 0,
+                "minNumberOfMatches": 0,
+                "minInputTrackLength": 2,
+                "minNumberOfObservationsForTriangulation": 2,
                 "minAngleForTriangulation": 1.0,
                 "minAngleForLandmark": 0.5,
+                "maxReprojectionError": 4.0,
+                "minAngleInitialPair": 5.0,
+                "maxAngleInitialPair": 40.0,
+                "useOnlyMatchesFromInputFolder": false,
+                "useRigConstraint": true,
+                "rigMinNbCamerasForCalibration": 20,
+                "lockAllIntrinsics": false,
+                "minNbCamerasToRefinePrincipalPoint": 3,
                 "filterTrackForks": true,
-                "useAutoTransform": false
+                "computeStructureColor": true,
+                "useAutoTransform": false,
+                "initialPairA": "",
+                "initialPairB": "",
+                "interFileExtension": ".abc",
+                "logIntermediateSteps": false,
+                "verboseLevel": "info"
             },
             "internalInputs": {
+                "invalidation": "",
                 "comment": "Solve all keyframes first.",
                 "label": "StructureFromMotionKeyframes",
                 "color": "#575963"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}/sfm.abc",
+                "outputViewsAndPoses": "{nodeCacheFolder}/cameras.sfm",
+                "extraInfoFolder": "{nodeCacheFolder}"
             }
         },
         "StructureFromMotion_7": {
@@ -603,6 +1215,13 @@
                 1385,
                 1028
             ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 30,
+                "split": 1
+            },
+            "uid": "99900d1a823f2b24dbc32cf7fb1ab302b4ebe1b9",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{FeatureMatching_9.input}",
                 "featuresFolders": "{FeatureMatching_9.featuresFolders}",
@@ -610,19 +1229,49 @@
                     "{FeatureMatching_9.output}"
                 ],
                 "describerTypes": "{FeatureMatching_9.describerTypes}",
+                "localizerEstimator": "acransac",
+                "observationConstraint": "Scale",
+                "localizerEstimatorMaxIterations": 50000,
+                "localizerEstimatorError": 0.0,
+                "lockScenePreviouslyReconstructed": false,
+                "useLocalBA": true,
+                "localBAGraphDistance": 1,
                 "nbFirstUnstableCameras": 0,
                 "maxImagesPerGroup": 0,
                 "bundleAdjustmentMaxOutliers": -1,
+                "maxNumberOfMatches": 0,
+                "minNumberOfMatches": 0,
                 "minInputTrackLength": 5,
                 "minNumberOfObservationsForTriangulation": 3,
                 "minAngleForTriangulation": 1.0,
                 "minAngleForLandmark": 0.5,
+                "maxReprojectionError": 4.0,
+                "minAngleInitialPair": 5.0,
+                "maxAngleInitialPair": 40.0,
+                "useOnlyMatchesFromInputFolder": false,
+                "useRigConstraint": true,
+                "rigMinNbCamerasForCalibration": 20,
+                "lockAllIntrinsics": false,
+                "minNbCamerasToRefinePrincipalPoint": 3,
                 "filterTrackForks": true,
-                "useAutoTransform": false
+                "computeStructureColor": true,
+                "useAutoTransform": false,
+                "initialPairA": "",
+                "initialPairB": "",
+                "interFileExtension": ".abc",
+                "logIntermediateSteps": false,
+                "verboseLevel": "info"
             },
             "internalInputs": {
+                "invalidation": "",
                 "comment": "Estimate cameras parameters for the complete camera tracking sequence.",
+                "label": "",
                 "color": "#80766f"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}/sfm.abc",
+                "outputViewsAndPoses": "{nodeCacheFolder}/cameras.sfm",
+                "extraInfoFolder": "{nodeCacheFolder}"
             }
         }
     }
