@@ -4,6 +4,8 @@ Relies on the rez package gsplat-develop, containing an install and a modify ver
 
 Utilisation: rez env meshroom-develop gsplatNodes-develop
 
+This also give you access to templates to run the optimisation/render, and the clean plate pipeline.
+
 # Optim nodes
 Gsplat is split in optim and render nodes.
 Use "GaussianSplattingOptim" to train the model for the target resolution.
