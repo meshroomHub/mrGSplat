@@ -20,3 +20,7 @@ You can also include masks.
 
 ## Image compo
 Node used to simply comp two set of images using masks
+
+## MeshrViz
+
+Generates 3d elipses for viewing in meshroom.
