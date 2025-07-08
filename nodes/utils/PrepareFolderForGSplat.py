@@ -31,15 +31,6 @@ class PrepareFolderForGS(desc.Node):
             name='scale',
             label='scale',
             description=''' ''',
-            value=['1', '2', '4', '8'],
-            values=SCALES,
-            exclusive=False,
-        ),
-
-        desc.ChoiceParam(
-            name='selectedScale',
-            label='selectedScale',
-            description=''' ''',
             value='1',
             values=SCALES,
             exclusive=True,
@@ -77,6 +68,7 @@ class PrepareFolderForGS(desc.Node):
             description='outputImageFolder',
             value=os.path.join("{nodeCacheFolder}", "images"),
             group='',
+            semantic="image"
         )
     ]
 
@@ -87,7 +79,7 @@ class PrepareFolderForGS(desc.Node):
         in output folder
         """
         import numpy as np
-        from shutil import copytree, rmtree
+        from shutil import copytree
         import cv2
         from PIL import Image
 
@@ -100,9 +92,9 @@ class PrepareFolderForGS(desc.Node):
         chunk.logManager.start(chunk.node.verboseLevel.value)
        
         #copy colmap folder
-        copytree(chunk.node.colmapFolder.value, chunk.node.outputFolder.value, dirs_exist_ok=True)
-        rmtree(os.path.join(chunk.node.outputFolder.value, 'images'))
-        
+        copytree(os.path.join(chunk.node.colmapFolder.value,"dense"), os.path.join(chunk.node.outputFolder.value,"dense"),dirs_exist_ok=True)
+        copytree(os.path.join(chunk.node.colmapFolder.value,"sparse"), os.path.join(chunk.node.outputFolder.value,"sparse"), dirs_exist_ok=True)
+      
 
         if chunk.node.forcePinhole.value:
             camera_file_path = os.path.join(chunk.node.outputFolder.value, "sparse", "cameras.txt")
@@ -115,35 +107,34 @@ class PrepareFolderForGS(desc.Node):
                     l = l.replace("FULL_OPENCV", "PINHOLE")
                     l = " ".join(l.split(" ")[0:8])
                     camera_file.write(l)
+
         #resize images and images
         def save_downsampled(inputfolder, name):
-            chunk.logger.info("Loading...")
+            chunk.logger.info("Looking for images")
             image_files = [f 
-                    for f in os.listdir(inputfolder) if f.endswith(".exr") or f.endswith(".jpg")]
-            images = []
+                    for f in os.listdir(inputfolder) if f.endswith(".exr") or f.endswith(".jpg") or f.endswith(".JPG") ]
+            chunk.logger.info(image_files)
+            scale=chunk.node.scale.value
+            folder_name = name if scale == 1 else name+"_"+str(scale)
+            os.makedirs(os.path.join(chunk.node.outputFolder.value, folder_name), exist_ok=True)
+            os.symlink(folder_name, os.path.join(chunk.node.outputFolder.value, name))
             for image_file in image_files:
+                chunk.logger.info(image_file)
                 image_file=os.path.join(inputfolder,image_file)
                 if not os.path.exists(image_file):
                     chunk.logger.info("Issue with "+image_file+", skipping")
-                images.append(open_image(image_file)/255.0)
-            #for each scale, save in mask_<scale>
-            for scale in chunk.node.scale.value:
-                dirname = name+"_"+scale
-                if os.path.exists(dirname):
-                    chunk.logger.warning("Folder "+dirname+" already computed, skipping")
-                    continue
-                chunk.logger.info("Resizing at "+scale)
-                images_resized = [cv2.resize(m, (0,0), fx=1/float(scale), fy=1/float(scale)) for m in images]
-                chunk.logger.info("Saving images")
-                #if int(scale)!=int(chunk.node.selectedScale.value) else name
-                os.makedirs(os.path.join(chunk.node.outputFolder.value, dirname), exist_ok=True)
-                for image_file, image in zip(image_files, images_resized):
-                    save_image(os.path.join(chunk.node.outputFolder.value, dirname, image_file[:-4]+".jpg"),(255*image).astype(np.uint8))
-            #create symlink for used scale
-            os.symlink(os.path.join(chunk.node.outputFolder.value, 
-                                    name+"_"+chunk.node.selectedScale.value),
-                       os.path.join(chunk.node.outputFolder.value, name))
+                image = open_image(image_file)/255.0
             
+                chunk.logger.info("Resizing at "+scale)
+                images_resized = cv2.resize(image, (0,0), fx=1/float(scale), fy=1/float(scale))
+                
+                chunk.logger.info("Saving image")
+                
+                im_path=os.path.join(chunk.node.outputFolder.value, folder_name, os.path.basename(image_file))
+                chunk.logger.info(im_path)
+                save_image(im_path,(255*images_resized).astype(np.uint8))
+   
+                
         if chunk.node.maskFolder.value != "":
             save_downsampled(chunk.node.maskFolder.value, "masks")
         save_downsampled(os.path.join(chunk.node.colmapFolder.value, "images"), "images")
