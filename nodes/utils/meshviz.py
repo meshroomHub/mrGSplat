@@ -41,9 +41,8 @@ gaussians = open_gaussian(sys.argv[1])
 xyz, rots, scales, opacities=gaussians
 
 meshes = []
-STEP = 30
 for i, (c, r, s, o) in enumerate(zip(*gaussians)):
-    if not (i%STEP==0):
+    if not (i%int(sys.argv[3])==0):
         continue
     unit_sphere = trimesh.creation.icosphere(subdivisions=1)
     transform = trimesh.transformations.compose_matrix(translate=c,angles=r,scale=s)

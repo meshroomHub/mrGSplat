@@ -10,7 +10,7 @@ class MeshViz(desc.CommandLineNode):
     category = 'Gsplat'
     documentation = ''''''
 
-    commandLine = 'rez env {rezEnvNameValue} -- python '+exe_path+' {modelValue} {meshPreviewValue} '
+    commandLine = 'rez env {rezEnvNameValue} -- python '+exe_path+' {modelValue} {meshPreviewValue} {samplingValue}'
 
    
     inputs = [
@@ -19,6 +19,13 @@ class MeshViz(desc.CommandLineNode):
             label="Model",
             description="Gaussian splats (.ckpt) to render.",
             value="",
+            group="",
+            ),
+            desc.IntParam(
+            name="sampling",
+            label="Sampling",
+            description="Step to sample the gaussians",
+            value=3,
             group="",
             ),
             desc.File(
