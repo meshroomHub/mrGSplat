@@ -50,6 +50,13 @@ class PrepareFolderForGS(desc.Node):
             label="forcePinhole",
             description="forcePinhole",
             value=True,
+        ),
+
+        desc.BoolParam(
+            name="noImages",
+            label="noImages",
+            description="noImages",
+            value=False,
         )
 
     ]
@@ -72,6 +79,9 @@ class PrepareFolderForGS(desc.Node):
         )
     ]
 
+
+
+
     def processChunk(self, chunk):
         """
         image_<scale>
@@ -82,10 +92,16 @@ class PrepareFolderForGS(desc.Node):
         from shutil import copytree
         import cv2
         from PIL import Image
+        import OpenImageIO as oiio
 
         def open_image(i):
-            return np.asarray(Image.open(i))
-        
+            inp = oiio.ImageInput.open(i)
+            spec = inp.spec()
+            nchannels = spec.nchannels
+            pixels = inp.read_image(0, 0, 0, nchannels, "uint8")
+            inp.close()
+            return pixels
+
         def save_image(p,i):
             Image.fromarray(i).save(p)
       
@@ -108,6 +124,10 @@ class PrepareFolderForGS(desc.Node):
                     l = " ".join(l.split(" ")[0:8])
                     camera_file.write(l)
 
+        if chunk.node.noImages.value:
+            chunk.logManager.end()
+            return
+
         #resize images and images
         def save_downsampled(inputfolder, name):
             chunk.logger.info("Looking for images")
@@ -115,9 +135,12 @@ class PrepareFolderForGS(desc.Node):
                     for f in os.listdir(inputfolder) if f.endswith(".exr") or f.endswith(".jpg") or f.endswith(".JPG") ]
             chunk.logger.info(image_files)
             scale=chunk.node.scale.value
-            folder_name = name if scale == 1 else name+"_"+str(scale)
+            folder_name = name if scale == '1' else name+"_"+str(scale)
             os.makedirs(os.path.join(chunk.node.outputFolder.value, folder_name), exist_ok=True)
-            os.symlink(folder_name, os.path.join(chunk.node.outputFolder.value, name))
+
+            if scale!='1':
+                os.symlink(folder_name, os.path.join(chunk.node.outputFolder.value, name))
+
             for image_file in image_files:
                 chunk.logger.info(image_file)
                 image_file=os.path.join(inputfolder,image_file)
@@ -130,13 +153,16 @@ class PrepareFolderForGS(desc.Node):
                 
                 chunk.logger.info("Saving image")
                 
-                im_path=os.path.join(chunk.node.outputFolder.value, folder_name, os.path.basename(image_file))
+                im_path=os.path.join(chunk.node.outputFolder.value, folder_name, os.path.basename(image_file)[:-4]+".png")
                 chunk.logger.info(im_path)
                 save_image(im_path,(255*images_resized).astype(np.uint8))
    
-                
-        if chunk.node.maskFolder.value != "":
-            save_downsampled(chunk.node.maskFolder.value, "masks")
         save_downsampled(os.path.join(chunk.node.colmapFolder.value, "images"), "images")
+
+        if chunk.node.maskFolder.value != "":
+            mask_folder = chunk.node.maskFolder.value
+            if not os.path.isdir(chunk.node.maskFolder.value):
+                mask_folder = os.path.dirname(chunk.node.maskFolder.value)
+            save_downsampled(mask_folder, "masks")
         chunk.logManager.end()
 
