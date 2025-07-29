@@ -7,12 +7,13 @@ currentDir = os.path.dirname(os.path.abspath(__file__))
 
 class GaussianSplattingRender(desc.CommandLineNode):
 
-    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingOptim default --ckpt {modelValue} --data_factor {resolutionFactorValue} --test_every 1 --data_dir {camerasValue} --result_dir {cache}/{nodeType}/{uid} --disable_viewer'
-
+    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingRender --model {modelValue} --cameras {camerasValue} --data_factor {resolutionFactorValue} --output {cache}/{nodeType}/{uid}'
+    
     gpu = desc.Level.INTENSIVE
     cpu = desc.Level.NORMAL
     ram = desc.Level.INTENSIVE
     
+    # TODO : split in multiple process -> probably useless because rendering is fast, what takes time is rez env and loading model
     # size = desc.DynamicNodeSize('cameras')
     # parallelization = desc.Parallelization(blockSize=40)
     # commandLineRange = '--rangeStart {rangeStart} --rangeSize {rangeBlockSize}'
@@ -20,14 +21,14 @@ class GaussianSplattingRender(desc.CommandLineNode):
     category = 'Gsplat'
     documentation = '''
     This node computes the rasterization of a given gaussian splatting model from given viewpoints.
-'''
-
+    '''
+    
     inputs = [
         desc.File(
             name="rezEnvName",
             label="Rez package name",
             description="Name (with path if necessary) of the rez package into which the computation should be executed.",
-            value="gsplat-maskSupport",
+            value="gsplat-develop",
             invalidate=False,
             group="",
             advanced=True,

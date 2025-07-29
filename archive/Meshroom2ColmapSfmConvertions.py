@@ -34,11 +34,9 @@ class Meshroom2ColmapSfmConvertions(desc.CommandLineNode):
             label='Output Folder',
             description='Path to the output SfM Data file.',
             value="{nodeCacheFolder}",
-            )
+        )
     ]
 
-
- 
 
     def processChunk(self, chunk):
         import json, os
@@ -70,4 +68,3 @@ class Meshroom2ColmapSfmConvertions(desc.CommandLineNode):
         # shutil.rmtree(os.path.join(chunk.node.output.value, 'sparse', '0'))
         # os.rename(os.path.join(chunk.node.output.value, 'sparse2'), os.path.join(chunk.node.output.value, 'sparse'))
         # #os.rmdir(os.path.join(chunk.node.output.value,'dense'))
-

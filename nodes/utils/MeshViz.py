@@ -12,23 +12,22 @@ class MeshViz(desc.CommandLineNode):
 
     commandLine = 'rez env {rezEnvNameValue} -- python '+exe_path+' {modelValue} {meshPreviewValue} {samplingValue}'
 
-   
     inputs = [
-            desc.File(
+        desc.File(
             name="model",
             label="Model",
             description="Gaussian splats (.ckpt) to render.",
             value="",
             group="",
-            ),
-            desc.IntParam(
+        ),
+        desc.IntParam(
             name="sampling",
             label="Sampling",
             description="Step to sample the gaussians",
             value=3,
             group="",
-            ),
-            desc.File(
+        ),
+        desc.File(
             name="rezEnvName",
             label="Rez package name",
             description="Name (with path if necessary) of the rez package into which the computation should be executed.",
@@ -37,15 +36,15 @@ class MeshViz(desc.CommandLineNode):
             group="",
             advanced=True,
             exposed=False,
-            ),
-            ]
+        ),
+    ]
 
     outputs = [
         desc.File(
-                name='meshPreview',
-                label='meshPreview',
-                description='meshPreview',
-                value=os.path.join('{nodeCacheFolder}', "preview_mesh.obj"),
-                group="",
-            )
+            name='meshPreview',
+            label='meshPreview',
+            description='meshPreview',
+            value=os.path.join('{nodeCacheFolder}', "preview_mesh.obj"),
+            group="",
+        )
     ]

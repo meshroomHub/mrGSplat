@@ -3,7 +3,7 @@ import os
 
 from meshroom.core import desc
 
-exe_path = os.path.join(os.path.dirname(__file__), 'meshSample.py')
+exe_path = os.path.join(os.path.dirname(__file__), 'scripts', 'meshSample.py')
 
 class MeshSample(desc.CommandLineNode):
 
@@ -13,21 +13,21 @@ class MeshSample(desc.CommandLineNode):
     commandLine = 'rez env {rezEnvNameValue} -- python '+exe_path+' {meshFileValue} {samplingValue} {inputSfMDataValue} {outputSfmDataValue}'
 
     inputs = [
-            desc.File(
+        desc.File(
             name="meshFile",
             label="meshFile",
             description="",
             value="",
             group="",
-            ),
-            desc.IntParam(
+        ),
+        desc.IntParam(
             name="sampling",
             label="Sampling",
             description="Step to sample the gaussians",
             value=3,
             group="",
-            ),
-            desc.File(
+        ),
+        desc.File(
             name="rezEnvName",
             label="Rez package name",
             description="Name (with path if necessary) of the rez package into which the computation should be executed.",
@@ -36,21 +36,21 @@ class MeshSample(desc.CommandLineNode):
             group="",
             advanced=True,
             exposed=False,
-            ),
-            desc.File(
+        ),
+        desc.File(
             name='inputSfMData',
             label='inputSfMData',
             description='SfMData file.',
             value=''
-            ),
-            ]
+        ),
+    ]
 
     outputs = [
         desc.File(
-                name='outputSfmData',
-                label='outputSfmData',
-                description='outputSfmData',
-                value=os.path.join('{nodeCacheFolder}', "sfm.sfm"),
-                group="",
-            )
+            name='outputSfmData',
+            label='outputSfmData',
+            description='outputSfmData',
+            value=os.path.join('{nodeCacheFolder}', "sfm.sfm"),
+            group="",
+        )
     ]

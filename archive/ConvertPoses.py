@@ -36,7 +36,6 @@ class ConvertPoses(desc.Node):
     ]
 
     def processChunk(self, chunk):
-        print("Hello")
         import numpy as np
         
         import pyalicevision as av
