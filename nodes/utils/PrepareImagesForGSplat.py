@@ -11,32 +11,45 @@ SCALES = ['1', '2', '4', '8', '16', '32', '64']
 VALID_IMG_EXT = (".exr", ".jpg", ".JPG", ".png", ".PNG")
 
 
-class ViewNodeSize(object):
+class ViewsRange:
     """
-    ViewNodeSize expresses a dependency to an input attribute to define
-    the size of a Node in terms of individual tasks for parallelization.
-    The attribute must be a Sfm file, and then Node size's size will be the number of views in the Sfm
+    ViewsRange splits a range in several chunks. We use this here in order to make sure that we
+    will export all images, and we try to deal with an equivalent number of images per chunk
     """
-    def __init__(self, param):
-        self._param = param
+    def __init__(self, nb_views, chunkRange):
+        self.nb_views = nb_views
+        self.iteration = chunkRange.iteration
+        self.nbBlocks = chunkRange.nbBlocks
+        def chunkize(l, n):
+            bs = len(l)//n + (1 if len(l)%n else 0)
+            s = [[] for _ in range(n)]
+            for i, e in enumerate(l):
+                s[i//bs].append(e)
+            return s
+        viewIndex = list(range(nb_views))
+        self.chunks = chunkize(viewIndex, self.nbBlocks)
     
-    def computeSize(self, node):
-        sfmFile = node.attribute(self._param).value
-        if not sfmFile or not os.path.exists(sfmFile):
-            return 1
-        sfm = sfmData.SfMData()
-        if not sfmDataIO.load(sfm, sfmFile, sfmDataIO.VIEWS):
-            print(f"Error while trying to load sfm file {sfmFile}")
-            return 1
-        return len(sfm.getViews())
-
+    def get_block_id(self, index):
+        for chunkId, chunk in enumerate(self.chunks):
+            if index in chunk:
+                return chunkId
+        return None
+    
+    def isViewInRange(self, index):
+        return self.get_block_id(index) == self.iteration
+    
+    def get_current_block_info(self):
+        chunk = self.chunks[self.iteration]
+        return f"Block [{self.iteration+1}/{self.nbBlocks}] -> Process views {chunk[0]} to {chunk[-1]}"
+            
 
 class PrepareImagesForGSplat(desc.Node):
 
     category = 'Gsplat'
     documentation = ''''''
     
-    size = ViewNodeSize("sfmData")
+    # size = ViewNodeSize("sfmData")
+    size = desc.DynamicNodeSize("sfmData")
     parallelization = desc.Parallelization(blockSize=40)
 
     inputs = [
@@ -138,8 +151,11 @@ class PrepareImagesForGSplat(desc.Node):
         """
         import OpenImageIO as oiio
         from pyalicevision.system import ConsoleProgressDisplay
+
+        chunk.logManager.start(chunk.node.verboseLevel.value)
         
         class Image:
+            # TODO : replace with pyalicevision.image
             def __init__(self, path):
                 self.path = path
                 self.buf = None
@@ -158,11 +174,16 @@ class PrepareImagesForGSplat(desc.Node):
             
             def write(self, output):
                 self.buf.write(output)
-
-        chunk.logManager.start(chunk.node.verboseLevel.value)
         
-        chunk.logger.info("Chunk range from {} to {}".format(chunk.range.start, chunk.range.last))
-
+        # Load SFM
+        sfmPath = chunk.node.sfmData.value
+        sfmContent = sfmData.SfMData()
+        if not sfmDataIO.load(sfmContent, sfmPath, sfmDataIO.ALL):
+            raise SystemError(f"Could not load sfm file {sfmPath}")
+        
+        viewrange = ViewsRange(len(sfmContent.getViews()), chunk.range)
+        chunk.logger.info(viewrange.get_current_block_info())
+        
         # Load reference SFM
         refSfmPath = chunk.node.referenceSfm.value
         # frame_id_to_name = {}
@@ -179,12 +200,6 @@ class PrepareImagesForGSplat(desc.Node):
                 # frame_id_to_name[int(frame_id)] = img_name
                 view_id = view.getViewId()
                 view_id_to_name[int(view_id)] = img_name
-        
-        # Load SFM
-        sfmPath = chunk.node.sfmData.value
-        sfmContent = sfmData.SfMData()
-        if not sfmDataIO.load(sfmContent, sfmPath, sfmDataIO.ALL):
-            raise SystemError(f"Could not load sfm file {sfmPath}")
         
         def get_image_name(image_path: Path, image_name_to_view_id: dict = None):
             """
@@ -220,18 +235,18 @@ class PrepareImagesForGSplat(desc.Node):
                 os.symlink(output_folder_path, os.path.join(chunk.node.outputFolder.value, name))
             # Downsample images
             mapping = {}
+            chunk.logger.info(f"Saving images to {output_folder_path}")
             progress = ConsoleProgressDisplay(len(image_paths), f"Saving images : {name} (scale={scale})\n")
             for k, image_path in enumerate(image_paths):
-                chunk.logger.info(f"Process image {os.path.basename(image_path)}")
+                print(f"Process image {os.path.basename(image_path)}")  # Works better with ProgressDisplay than using logger
                 if not os.path.exists(image_path):
-                    chunk.logger.info(f"Issue with {image_path}, skipping")
+                    chunk.logger.warning(f"Issue with {image_path}, skipping")
                 output_basename = get_image_name(Path(image_path), image_name_to_view_id)
                 output_path = os.path.join(output_folder_path, output_basename)
                 mapping[image_path] = output_path
-                if k >= chunk.range.start and k <= chunk.range.last:
+                if viewrange.isViewInRange(k):
                     image = Image(image_path)
                     image.resize(float(scale))
-                    chunk.logger.info(f"Saving image to {output_path}")
                     image.write(output_path)
                 progress += 1
             return mapping
