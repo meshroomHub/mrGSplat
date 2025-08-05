@@ -3,7 +3,7 @@ import os
 
 from meshroom.core import desc
 
-exe_path = os.path.join(os.path.dirname(__file__), 'meshviz.py ')
+exe_path = os.path.join(os.path.dirname(__file__), 'scripts', 'meshviz.py')
 
 class MeshViz(desc.CommandLineNode):
 

@@ -21,6 +21,8 @@ class GaussianSplattingOptim(desc.CommandLineNode):
     def buildCommandLine(self, chunk):
         cmdLine = super(GaussianSplattingOptim, self).buildCommandLine(chunk) # ou juste super().buildCommandLine(chunk)
         node = chunk.node
+        if node.mesh.value:
+            cmdLine = cmdLine + " --mesh " + node.mesh.value
         if node.masksFolder.value:
             cmdLine = cmdLine + " --masksFolder " + node.masksFolder.value
         if node.metadataFolder.value:
@@ -29,6 +31,8 @@ class GaussianSplattingOptim(desc.CommandLineNode):
             cmdLine = cmdLine + " --poseOpt"
         if node.resumeCheckpoint.value:
             cmdLine = cmdLine + " --resumeCkpt " + node.resumeCheckpoint.value
+        if node.optimizedPoses.value:
+            cmdLine = cmdLine + " --optimizedPoses " + node.optimizedPoses.value
         saveSteps = "{}".format(
             str(node.n_steps.value) if not node.custom_ckpts.value else " ".join([str(e.value) for e in node.save_steps.value])
         )
@@ -50,6 +54,13 @@ class GaussianSplattingOptim(desc.CommandLineNode):
             name="sfm",
             label="sfmData",
             description="SfMData with the views, poses and intrinsics to use.",
+            value="",
+            group="",
+        ),
+        desc.File(
+            name="mesh",
+            label="mesh",
+            description="",
             value="",
             group="",
         ),
@@ -132,6 +143,13 @@ class GaussianSplattingOptim(desc.CommandLineNode):
             label="Model",
             description="Optimized gaussian splatting model",
             value = lambda attr: "{nodeCacheFolder}" + f"/ckpts/ckpt_{attr.node.n_steps.value-1}_rank0.pt",
+            group="",
+        ),
+        desc.File(
+            name="optimizedPoses",
+            label="Poses",
+            description="Optimized poses",
+            value = lambda attr: "{nodeCacheFolder}" + f"/ckpts/poses{attr.node.n_steps.value-1}.sfm",
             group="",
         ),
     ]
