@@ -17,13 +17,6 @@ class Quaternion:
         self.z = z
         self.w = w
     
-    def adjust(self):
-        # Directly correct axis
-        self.x = -self.x
-        self.y =  self.y
-        self.z =  self.z
-        self.w =  self.w
-
     @classmethod
     def from_matrix(cls, matrix):
         r = R.from_matrix(matrix)
@@ -39,44 +32,22 @@ class Vector:
         self.x = x
         self.y = y
         self.z = z
+
+
+class CameraIntrinsics:
+    # TODO
     
-    def adjust(self):
-        self.x =  self.x
-        self.y = -self.y
-        self.z = -self.z
+    def __init__(self):
+        pass
+    
+    def toDict(self):
+        pass
 
 
 class CameraPoses:
     def __init__(self):
         # {frame_id : matrix}
         self.poses = {}
-    
-    def print_pose(self, frame_id):
-        quat, trans = self.poses[frame_id]
-        print(f"Rotation (QW={quat.w}, QX={quat.x}, QY={quat.y}, QZ={quat.z}), Translation(X={trans.x}, Y={trans.y}, Z={trans.z})")
-
-    def add_pose_old(self, frame_id, mat):
-        # TODO : remove
-        assert isinstance(mat, imath.M44d)
-        # TODO
-        mat = mat.transpose()
-        rotate = np.zeros((3, 3))
-        center = np.zeros((3, 1))
-        for row_i in range(3):
-            # Rotation
-            for col_i in range(3):
-                rotate[row_i][col_i]   = mat[row_i][col_i]
-            # Translation
-            center[row_i] = mat[row_i][3]
-        # ???????
-        # -> https://github.com/alicevision/AliceVision/blob/develop/src/aliceVision/sfmDataIO/colmap.cpp#L348
-        # Why translate and not center
-        translate = np.matmul(-invert(rotate), center)
-        _q = Quaternion.from_matrix(rotate)
-        _q.adjust()
-        _t = Vector(*translate)
-        _t.adjust()
-        self.poses[frame_id] = (_q, _t)
     
     def add_pose(self, frame_id, mat):
         assert isinstance(mat, imath.M44d)
@@ -102,18 +73,12 @@ class CameraPoses:
             # Translation
             translate[row_i] = T2[row_i][3]
         self.poses[frame_id] = (Quaternion.from_matrix(rotate), Vector(*translate))
-
-    def exportToFile(self, filePath):
-        header  = "# Image list with two lines of data per image:\n"
-        header += "#   IMAGE_ID, QW, QX, QY, QZ, TX, TY, TZ, CAMERA_ID\n"
-        # First build a string for each pose
-        frames = []
-        for frame_index in sorted(self.poses.keys()):
-            quat, trans = self.poses[frame_index]
-            frames.append(f"{frame_index} {quat.w} {quat.x} {quat.y} {quat.z} {trans.x} {trans.y} {trans.z} {frame_index}")
-        # Now export to file
-        with open(filePath, "w") as fo:
-            fo.write(header + "\n".join(frames))
+    
+    def get_pose(self, frame_id):
+        pose = self.poses[frame_id]
+        av_pose = None
+        # TODO : create pose for alicevision format
+        return av_pose
 
 
 def get_poses_from_sfm(archive, path) -> CameraPoses:
@@ -131,6 +96,17 @@ def get_poses_from_sfm(archive, path) -> CameraPoses:
     return poses
 
 
+def create_sfm_with_poses(cameraPoses: CameraPoses, intrinsics: CameraIntrinsics) -> dict:
+    poses = []
+    for frame_id in cameraPoses.poses.keys():
+        poses.append(cameraPoses.get_pose(frame_id))
+    sfmData = {
+        "intrinsics": [intrinsics.toDict()],
+        "poses": poses,
+    }
+    return sfmData
+
+
 def get_poses_from_abc(archive, path) -> CameraPoses:
     poses = CameraPoses()
     cam_poses = archive.top.children[path].properties[".xform/.vals"].values
@@ -139,7 +115,7 @@ def get_poses_from_abc(archive, path) -> CameraPoses:
     return poses
 
 
-def processChunk(args):
+def main(args):
     # Find alembic file
     srcAlembicFilePath = args.alembicFile
     alembicPath     = args.alembicPath
@@ -174,7 +150,7 @@ def processChunk(args):
     cameraPoses = get_poses_from_sfm(archive, alembicPath) if camerasFromSfm else get_poses_from_abc(archive, alembicPath)
     
     # Export to file
-    outputFile = os.path.join(args.result_dir, "cameraPoses.txt")
+    outputFile = os.path.join(args.result_dir, "sfmData.sfm")
     cameraPoses.exportToFile(outputFile)
 
 
@@ -202,4 +178,4 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    processChunk(args)
+    main(args)

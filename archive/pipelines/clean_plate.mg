@@ -17,8 +17,7 @@
             "ImageProcessing": "3.3",
             "ImageSegmentationPrompt": "0.1",
             "KeyframeSelection": "5.0",
-            "Meshroom2ColmapSfmConvertions": "2.0",
-            "PrepareFolderForGS": "3.0",
+            "PrepareImagesForGSplat": "1.0",
             "StructureFromMotion": "3.3"
         }
     },
@@ -264,8 +263,8 @@
         "ConvertSfMFormat_7": {
             "nodeType": "ConvertSfMFormat",
             "position": [
-                482,
-                1470
+                1589,
+                1110
             ],
             "parallelization": {
                 "blockSize": 0,
@@ -429,52 +428,15 @@
                 "output": "{nodeCacheFolder}"
             }
         },
-        "FilterMasks_1": {
-            "nodeType": "FilterMasks",
-            "position": [
-                1393,
-                1626
-            ],
-            "parallelization": {
-                "blockSize": 0,
-                "size": 1,
-                "split": 1
-            },
-            "uid": "6a14ad3f73d71ae2268466fff9ed45b2c3943f38",
-            "internalFolder": "{cache}/{nodeType}/{uid}",
-            "inputs": {
-                "maskFolder": "{FilterMasks_6.outputFolder}",
-                "inputSfM": "{FilterMasks_6.inputSfM}",
-                "filterType": "blur",
-                "keepFilename": true,
-                "extension": "{FilterMasks_6.extension}",
-                "kernel_size": 3,
-                "kernel_shape": "rect",
-                "iterations": 1,
-                "use_of": false,
-                "smoothing_strength": 0.05,
-                "verboseLevel": "debug"
-            },
-            "internalInputs": {
-                "invalidation": "",
-                "comment": "",
-                "label": "Blur",
-                "color": "#C16162"
-            },
-            "outputs": {
-                "outputFolder": "{nodeCacheFolder}",
-                "masks": "{nodeCacheFolder}/<FILESTEM>.jpg"
-            }
-        },
         "FilterMasks_2": {
             "nodeType": "FilterMasks",
             "position": [
-                393,
-                1272
+                538,
+                1304
             ],
             "parallelization": {
-                "blockSize": 0,
-                "size": 1,
+                "blockSize": 50,
+                "size": 15,
                 "split": 1
             },
             "uid": "321e8a1e9eb2688c0f189d8abab606adc1a9a1b7",
@@ -506,12 +468,12 @@
         "FilterMasks_3": {
             "nodeType": "FilterMasks",
             "position": [
-                197,
-                1272
+                277,
+                1307
             ],
             "parallelization": {
-                "blockSize": 0,
-                "size": 1,
+                "blockSize": 50,
+                "size": 15,
                 "split": 1
             },
             "uid": "f9a399273d1c91494f95f3a9469b3dd43ca2705d",
@@ -543,12 +505,12 @@
         "FilterMasks_4": {
             "nodeType": "FilterMasks",
             "position": [
-                590,
-                1273
+                799,
+                1300
             ],
             "parallelization": {
-                "blockSize": 0,
-                "size": 1,
+                "blockSize": 50,
+                "size": 15,
                 "split": 1
             },
             "uid": "5f4c028a4c58f9db32b075f34e84eb8f16cd1b82",
@@ -577,21 +539,58 @@
                 "masks": "{nodeCacheFolder}/<FILESTEM>.jpg"
             }
         },
-        "FilterMasks_6": {
+        "FilterMasks_5": {
             "nodeType": "FilterMasks",
             "position": [
-                1193,
-                1622
+                1344.5,
+                1290.0
             ],
             "parallelization": {
-                "blockSize": 0,
-                "size": 1,
+                "blockSize": 50,
+                "size": 15,
+                "split": 1
+            },
+            "uid": "6a14ad3f73d71ae2268466fff9ed45b2c3943f38",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
+            "inputs": {
+                "maskFolder": "{FilterMasks_7.outputFolder}",
+                "inputSfM": "{FilterMasks_7.inputSfM}",
+                "filterType": "blur",
+                "keepFilename": true,
+                "extension": "{FilterMasks_7.extension}",
+                "kernel_size": 3,
+                "kernel_shape": "rect",
+                "iterations": 1,
+                "use_of": false,
+                "smoothing_strength": 0.05,
+                "verboseLevel": "debug"
+            },
+            "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "Blur",
+                "color": "#C16162"
+            },
+            "outputs": {
+                "outputFolder": "{nodeCacheFolder}",
+                "masks": "{nodeCacheFolder}/<FILESTEM>.jpg"
+            }
+        },
+        "FilterMasks_7": {
+            "nodeType": "FilterMasks",
+            "position": [
+                1070.5,
+                1295.0
+            ],
+            "parallelization": {
+                "blockSize": 50,
+                "size": 15,
                 "split": 1
             },
             "uid": "e8ec0a8b27b7ad09986a861aac3ecf7af94bc3a5",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "maskFolder": "{PrepareFolderForGS_1.maskFolder}",
+                "maskFolder": "{FilterMasks_4.outputFolder}",
                 "inputSfM": "{FilterMasks_4.inputSfM}",
                 "filterType": "erosion",
                 "keepFilename": true,
@@ -614,98 +613,102 @@
                 "masks": "{nodeCacheFolder}/<FILESTEM>.jpg"
             }
         },
-        "GaussianSplattingOptim_1": {
+        "GaussianSplattingOptim_2": {
             "nodeType": "GaussianSplattingOptim",
             "position": [
-                1311.0,
-                1445.0
+                2018,
+                1224
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 1,
                 "split": 1
             },
-            "uid": "15edb831482fa0a17b63dedae0fb091cfdb065b3",
+            "uid": "0bd4ed89dc601c6ef202f53035dd3790f6c95939",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "rezEnvName": "gsplat-develop",
-                "sfm": "{PrepareFolderForGS_2.outputFolder}",
-                "resumeCheckpoint": "{GaussianSplattingOptim_3.model}",
-                "n_steps": 300,
-                "dataFactor": 1,
-                "custom_ckpts": false,
-                "save_steps": [
-                    3000
-                ],
-                "use_masks": true,
-                "pose_opt": false
-            },
-            "internalInputs": {
-                "invalidation": "new env C",
-                "comment": "",
-                "label": "",
-                "color": "#2CB9CC"
-            },
-            "outputs": {
-                "output": "{nodeCacheFolder}",
-                "model": "{nodeCacheFolder}/ckpts/ckpt_299_rank0.pt"
-            }
-        },
-        "GaussianSplattingOptim_3": {
-            "nodeType": "GaussianSplattingOptim",
-            "position": [
-                1108,
-                1510
-            ],
-            "parallelization": {
-                "blockSize": 0,
-                "size": 1,
-                "split": 1
-            },
-            "uid": "e705d4fabbf71d5910296bdcc0e41c8ccf3fbce3",
-            "internalFolder": "{cache}/{nodeType}/{uid}",
-            "inputs": {
-                "rezEnvName": "gsplat-develop",
-                "sfm": "{PrepareFolderForGS_1.outputFolder}",
+                "rezEnvName": "gsplat==sonoleta aliceVision==sonoleta",
+                "sfm": "{PrepareImagesForGSplat_1.outputSfmFile}",
+                "mesh": "",
+                "dataFactor": 4,
+                "masksFolder": "{PrepareImagesForGSplat_1.outputMasksFolder}",
+                "metadataFolder": "",
                 "resumeCheckpoint": "",
-                "n_steps": 3000,
-                "dataFactor": 8,
+                "n_steps": 6000,
                 "custom_ckpts": false,
-                "save_steps": [
-                    3000
-                ],
-                "use_masks": true,
+                "save_steps": [],
                 "pose_opt": false
             },
             "internalInputs": {
-                "invalidation": "new env C",
+                "invalidation": "",
                 "comment": "",
                 "label": "",
                 "color": "#2CB9CC"
             },
             "outputs": {
                 "output": "{nodeCacheFolder}",
-                "model": "{nodeCacheFolder}/ckpts/ckpt_2999_rank0.pt"
+                "model": "{nodeCacheFolder}/ckpts/ckpt_5999_rank0.pt",
+                "optimizedPoses": "{nodeCacheFolder}/ckpts/poses5999.sfm"
             }
         },
-        "GaussianSplattingRender_1": {
+        "GaussianSplattingOptim_4": {
+            "nodeType": "GaussianSplattingOptim",
+            "position": [
+                2221.0,
+                1226.0
+            ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "372f6a466d86331fbb295fea391459cb28666e89",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
+            "inputs": {
+                "rezEnvName": "gsplat==sonoleta aliceVision==sonoleta",
+                "sfm": "{PrepareImagesForGSplat_3.outputSfmFile}",
+                "mesh": "",
+                "dataFactor": 1,
+                "masksFolder": "{PrepareImagesForGSplat_3.outputMasksFolder}",
+                "metadataFolder": "",
+                "resumeCheckpoint": "{GaussianSplattingOptim_2.model}",
+                "n_steps": 30000,
+                "custom_ckpts": false,
+                "save_steps": [],
+                "pose_opt": false
+            },
+            "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
+                "color": "#2CB9CC"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}",
+                "model": "{nodeCacheFolder}/ckpts/ckpt_29999_rank0.pt",
+                "optimizedPoses": "{nodeCacheFolder}/ckpts/poses29999.sfm"
+            }
+        },
+        "GaussianSplattingRender_2": {
             "nodeType": "GaussianSplattingRender",
             "position": [
-                1513.0,
-                1441.0
+                2429,
+                1236
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 1,
                 "split": 1
             },
-            "uid": "6f029e489f1d95424b038b87a4032df367d6a9c3",
+            "uid": "05ce389f0f158b1511ce7a93ca04ccf69e4c827d",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "rezEnvName": "gsplat-maskSupport",
-                "cameras": "{GaussianSplattingOptim_1.sfm}",
-                "model": "{GaussianSplattingOptim_1.model}",
-                "resolutionFactor": 1
+                "rezEnvName": "gsplat==sonoleta aliceVision==sonoleta",
+                "cameras": "{GaussianSplattingOptim_4.sfm}",
+                "model": "{GaussianSplattingOptim_4.model}",
+                "resolutionFactor": 1,
+                "outputFormat": ".jpg",
+                "outputColorspace": "NO_CONVERSION"
             },
             "internalInputs": {
                 "invalidation": "",
@@ -719,24 +722,25 @@
                 "render_folder": "{nodeCacheFolder}/renders"
             }
         },
-        "ImageCompo_2": {
+        "ImageCompo_1": {
             "nodeType": "ImageCompo",
             "position": [
-                1746,
-                1468
+                2652,
+                1045
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 1,
                 "split": 1
             },
-            "uid": "a01374a069dc94af3ea3e1026f4bb15d7754eea5",
+            "uid": "a38cc0ea62965b411627af7c4a08e16dc3a5b5c9",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "folderA": "{PrepareFolderForGS_1.outputImageFolder}",
-                "folderB": "{GaussianSplattingRender_1.render_folder}",
-                "folderMask": "{FilterMasks_1.outputFolder}",
-                "rename": true
+                "folderA": "{PrepareImagesForGSplat_3.outputImageFolder}",
+                "folderB": "{GaussianSplattingRender_2.render_folder}",
+                "folderMask": "{PrepareImagesForGSplat_3.maskFolder}",
+                "rename": true,
+                "sfmReference": "{PrepareImagesForGSplat_3.sfmData}"
             },
             "internalInputs": {
                 "invalidation": "",
@@ -933,8 +937,8 @@
         "ImageSegmentationPrompt_1": {
             "nodeType": "ImageSegmentationPrompt",
             "position": [
-                4,
-                1252
+                -18,
+                1285
             ],
             "parallelization": {
                 "blockSize": 50,
@@ -1043,56 +1047,29 @@
                 "outputSfMDataFrames": "{nodeCacheFolder}/frames.sfm"
             }
         },
-        "Meshroom2ColmapSfmConvertions_3": {
-            "nodeType": "Meshroom2ColmapSfmConvertions",
+        "PrepareImagesForGSplat_1": {
+            "nodeType": "PrepareImagesForGSplat",
             "position": [
-                663,
-                1464
+                1814,
+                1230
             ],
             "parallelization": {
-                "blockSize": 0,
+                "blockSize": 40,
                 "size": 30,
                 "split": 1
             },
-            "uid": "be31b26a2703124cac6a47b04ff436e9e167fab2",
+            "uid": "f096db853ac4bb2784046a7898c624bb46958b50",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{ConvertSfMFormat_7.output}",
-                "verboseLevel": "info"
-            },
-            "internalInputs": {
-                "invalidation": "",
-                "comment": "",
-                "label": "",
-                "color": ""
-            },
-            "outputs": {
-                "output": "{nodeCacheFolder}"
-            }
-        },
-        "PrepareFolderForGS_1": {
-            "nodeType": "PrepareFolderForGS",
-            "position": [
-                879,
-                1437
-            ],
-            "parallelization": {
-                "blockSize": 0,
-                "size": 1,
-                "split": 1
-            },
-            "uid": "87817fd5b0fc3a4c641306ea8783fa75a96526d8",
-            "internalFolder": "{cache}/{nodeType}/{uid}",
-            "inputs": {
-                "colmapFolder": "{Meshroom2ColmapSfmConvertions_3.output}",
-                "maskFolder": "{FilterMasks_4.outputFolder}",
-                "scale": [
-                    "2",
-                    "4",
-                    "8",
-                    "1"
-                ],
-                "selectedScale": "8",
+                "sfmData": "{ConvertSfMFormat_7.output}",
+                "maskFolder": "{FilterMasks_5.outputFolder}",
+                "referenceSfm": "{FilterMasks_5.inputSfM}",
+                "scale": "4",
+                "colorspaces": {
+                    "inputColorspace": "NO_CONVERSION",
+                    "outputColorspace": "NO_CONVERSION"
+                },
+                "forceExtension": "keep",
                 "verboseLevel": "info",
                 "forcePinhole": true
             },
@@ -1100,36 +1077,38 @@
                 "invalidation": "",
                 "comment": "",
                 "label": "",
-                "color": "#E35C03"
+                "color": "#3D6953"
             },
             "outputs": {
                 "outputFolder": "{nodeCacheFolder}",
-                "outputImageFolder": "{nodeCacheFolder}/images"
+                "outputSfmFile": "{nodeCacheFolder}/sfm.json",
+                "outputImageFolder": "{nodeCacheFolder}/images",
+                "outputMasksFolder": "{nodeCacheFolder}/masks"
             }
         },
-        "PrepareFolderForGS_2": {
-            "nodeType": "PrepareFolderForGS",
+        "PrepareImagesForGSplat_3": {
+            "nodeType": "PrepareImagesForGSplat",
             "position": [
-                883.0,
-                1319.0
+                2017.0,
+                1031.0
             ],
             "parallelization": {
-                "blockSize": 0,
-                "size": 1,
+                "blockSize": 40,
+                "size": 30,
                 "split": 1
             },
-            "uid": "d6b9250d408f9ef7975bc3f6673855d63e9f2644",
+            "uid": "059d614a11c3aa62ccf04be9ae9d1dcba747b15d",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "colmapFolder": "{Meshroom2ColmapSfmConvertions_3.output}",
-                "maskFolder": "{FilterMasks_4.outputFolder}",
-                "scale": [
-                    "2",
-                    "4",
-                    "8",
-                    "1"
-                ],
-                "selectedScale": "1",
+                "sfmData": "{ConvertSfMFormat_7.output}",
+                "maskFolder": "{FilterMasks_5.outputFolder}",
+                "referenceSfm": "{FilterMasks_5.inputSfM}",
+                "scale": "1",
+                "colorspaces": {
+                    "inputColorspace": "NO_CONVERSION",
+                    "outputColorspace": "NO_CONVERSION"
+                },
+                "forceExtension": "keep",
                 "verboseLevel": "info",
                 "forcePinhole": true
             },
@@ -1137,11 +1116,13 @@
                 "invalidation": "",
                 "comment": "",
                 "label": "",
-                "color": "#E35C03"
+                "color": "#3D6953"
             },
             "outputs": {
                 "outputFolder": "{nodeCacheFolder}",
-                "outputImageFolder": "{nodeCacheFolder}/images"
+                "outputSfmFile": "{nodeCacheFolder}/sfm.json",
+                "outputImageFolder": "{nodeCacheFolder}/images",
+                "outputMasksFolder": "{nodeCacheFolder}/masks"
             }
         },
         "StructureFromMotion_6": {

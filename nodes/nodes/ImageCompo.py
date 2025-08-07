@@ -1,16 +1,13 @@
 __version__ = "1.0"
 
-from meshroom.core import desc
-from meshroom.core.utils import VERBOSE_LEVEL
 import os
+from meshroom.core import desc
 
 class ImageCompo(desc.Node):
     #size = desc.DynamicNodeSize('inputFiles')
 
     category = 'Gsplat'
-    documentation = '''
-This node allows to perform basic alpha compositing.
-'''
+    documentation = '''This node allows to perform basic alpha compositing.'''
 
     inputs = [
         desc.File(
@@ -36,6 +33,12 @@ This node allows to perform basic alpha compositing.
             label="rename",
             description="Renames the images",
             value=True,
+        ),
+        desc.File(
+            name="sfmReference",
+            label="SfmReference",
+            description="Sfm file used to sort the images per frame ID",
+            value="",
         )
     ]
 
@@ -60,12 +63,26 @@ This node allows to perform basic alpha compositing.
     def processChunk(self, chunk):
         try:
             import OpenImageIO as oiio
-            import os
             import cv2
-
-            im1_names = sorted([e for e in os.listdir(chunk.node.folderA.value) if len(e)>=5 and e[-4:]==".jpg"])
-            im2_names = sorted([e for e in os.listdir(chunk.node.folderB.value) if len(e)>=5 and e[-4:]==".jpg"])
-            masks_names = sorted([e for e in os.listdir(chunk.node.folderMask.value) if len(e)>=5 and e[-4:]==".jpg"])
+            import json
+            from pathlib import Path
+            
+            stem_to_frameId = {}
+            if chunk.node.rename.value and os.path.exists(chunk.node.sfmReference.value):
+                with open(chunk.node.sfmReference.value, "r") as f:
+                    sfm_data = json.load(f)
+                stem_to_frameId = {Path(v["path"]).stem: v["frameId"] for v in sfm_data.get("views", {})}
+            
+            sort_f = lambda _file: stem_to_frameId.get(Path(_file).stem, Path(_file).stem)
+            im1_names = sorted(
+                [e for e in os.listdir(chunk.node.folderA.value) if len(e)>=5 and e[-4:]==".jpg"], key=sort_f
+            )
+            im2_names = sorted(
+                [e for e in os.listdir(chunk.node.folderB.value) if len(e)>=5 and e[-4:]==".jpg"], key=sort_f
+            )
+            masks_names = sorted(
+                [e for e in os.listdir(chunk.node.folderMask.value) if len(e)>=5 and e[-4:]==".jpg"], key=sort_f
+            )
 
             assert len(im1_names)==len(im2_names), f"Number of images is different in two folders: {len(im1_names)} VS {len(im2_names)}"
             assert len(im1_names)==len(masks_names), f"Number of images is different from number of masks: {len(im1_names)} VS {len(masks_names)}"
@@ -103,7 +120,7 @@ This node allows to perform basic alpha compositing.
                 res = im2*(1-mask) + im1*mask
 
                 if chunk.node.rename.value:
-                    filename = os.path.join(chunk.node.combinedImageFolder.value, "%05d.jpg"%i)
+                    filename = os.path.join(chunk.node.combinedImageFolder.value, f"frame_{i:05d}.jpg")
                 else:
                     filename = os.path.join(chunk.node.combinedImageFolder.value, a)
                 out = oiio.ImageOutput.create(filename)

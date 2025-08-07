@@ -4,6 +4,8 @@ import os
 from meshroom.core import desc
 
 exe_path = os.path.join(os.path.dirname(__file__), 'scripts', 'meshviz.py')
+rez_env = ["pytorch", "numpy", "trimesh"]
+
 
 class MeshViz(desc.CommandLineNode):
 
@@ -20,6 +22,7 @@ class MeshViz(desc.CommandLineNode):
             value="",
             group="",
         ),
+        
         desc.IntParam(
             name="sampling",
             label="Sampling",
@@ -27,11 +30,12 @@ class MeshViz(desc.CommandLineNode):
             value=3,
             group="",
         ),
+        
         desc.File(
             name="rezEnvName",
             label="Rez package name",
             description="Name (with path if necessary) of the rez package into which the computation should be executed.",
-            value="gsplat-develop",
+            value=" ".join(rez_env),
             invalidate=False,
             group="",
             advanced=True,

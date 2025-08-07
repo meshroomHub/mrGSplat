@@ -331,6 +331,9 @@ class PrepareImagesForGSplat(desc.Node):
                 # frame_id = view.getFrameId()
                 view_id = view.getViewId()
                 view_id_to_name[int(view_id)] = img_name
+        elif chunk.node.maskFolder.value != "":
+            raise ValueError("When using masks you also need a reference to be able to map the images to the " \
+                "masks ! You can use the input of ImageSegmentationPrompt or the sfmData of FilterMask nodes")
         
         def get_image_name(image_path: Path, image_name_to_view_id: dict = None):
             """

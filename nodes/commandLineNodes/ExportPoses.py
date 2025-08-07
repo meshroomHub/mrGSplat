@@ -1,9 +1,13 @@
 
-__version__ = "3.0"
+__version__ = "1.0"
 
 import os
 
 from meshroom.core import desc
+
+
+exe_path = os.path.join(os.path.dirname(__file__), 'scripts', 'exportPoses.py')
+rez_env = ["numpy", "pytorch"]
 
 
 class ExportPoses(desc.CommandLineNode):
@@ -11,7 +15,7 @@ class ExportPoses(desc.CommandLineNode):
     category = 'Gsplat'
     documentation = ''''''
 
-    commandLine = 'rez env {rezEnvNameValue} -- python -c "import numpy as np; import torch; np.save(\'{outputFileValue}\',torch.load(\'{modelValue}\', map_location=\'cpu\')[\'pose_adjust\'])" '
+    commandLine = 'rez env {rezEnvNameValue} -- python ' + exe_path + ' {modelValue} {nodeCacheFolder}'
 
     inputs = [
         desc.File(
@@ -20,26 +24,26 @@ class ExportPoses(desc.CommandLineNode):
             description='',
             value='',
         ),
+        
+        desc.ChoiceParam(
+            name='verboseLevel',
+            label='Verbose Level',
+            description='''verbosity level (fatal, error, warning, info, debug, trace).''',
+            value='info',
+            values=['fatal', 'error', 'warning', 'info', 'debug', 'trace'],
+            exclusive=True,
+        ),
+        
         desc.File(
             name="rezEnvName",
             label="Rez package name",
             description="Name (with path if necessary) of the rez package into which the computation should be executed.",
-            value="gsplat-develop",
+            value=" ".join(rez_env),
             invalidate=False,
             group="",
             advanced=True,
             exposed=False,
         ),
-
-        desc.ChoiceParam(
-                name='verboseLevel',
-                label='Verbose Level',
-                description='''verbosity level (fatal, error, warning, info, debug, trace).''',
-                value='info',
-                values=['fatal', 'error', 'warning', 'info', 'debug', 'trace'],
-                exclusive=True,
-            ),
-
     ]
 
     outputs = [
@@ -49,7 +53,13 @@ class ExportPoses(desc.CommandLineNode):
             description='outputFile',
             value=os.path.join("{nodeCacheFolder}","poses.npy"),
             group='',
+        ),
+        
+        desc.File(
+            name='sfmData',
+            label='sfmData',
+            description='sfmData',
+            value=os.path.join("{nodeCacheFolder}","sfm.json"),
+            group='',
         )
     ]
-
-

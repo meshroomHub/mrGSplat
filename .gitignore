@@ -1,1 +1,4 @@
-pipelines/MeshroomCache/*
+MeshroomCache
+*.pyc
+__pycache__
+.vscode

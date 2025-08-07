@@ -14,7 +14,7 @@ COLOR_SPACES = [
 
 class GaussianSplattingRender(desc.CommandLineNode):
 
-    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingRender --model {modelValue} --cameras {camerasValue} --data_factor {resolutionFactorValue} --output {cache}/{nodeType}/{uid} --outputFormat {outputFormatValue}'
+    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingRender --model {modelValue} --cameras {camerasValue} --data_factor {resolutionFactorValue} --output {cache}/{nodeType}/{uid} --outputFormat {outputFormatValue} --outputColorspace {outputColorspaceValue}'
     
     gpu = desc.Level.INTENSIVE
     cpu = desc.Level.NORMAL

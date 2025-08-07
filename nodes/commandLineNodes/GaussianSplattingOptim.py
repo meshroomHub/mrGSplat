@@ -1,9 +1,7 @@
 __version__ = "1.0"
 
 from meshroom.core import desc
-import os.path
 
-currentDir = os.path.dirname(os.path.abspath(__file__))
 
 class GaussianSplattingOptim(desc.CommandLineNode):
     

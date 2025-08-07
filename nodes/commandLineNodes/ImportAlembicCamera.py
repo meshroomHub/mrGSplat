@@ -1,0 +1,103 @@
+
+__version__ = "1.0"
+
+from meshroom.core import desc
+import os
+
+exe_path = os.path.join(os.path.dirname(__file__), 'scripts', 'importAlembicCamera.py')
+rez_env = ["python-3.7", "scipy", "numpy", "cask"]
+
+
+class ImportAlembicCamera(desc.CommandLineNode):
+
+    category = 'Gsplat'
+    documentation = ''''''
+    
+    commandLine = 'rez env {rezEnvNameValue} -- python ' + exe_path
+    
+    def buildCommandLine(self, chunk):
+        cmdLine = super(ImportAlembicCamera, self).buildCommandLine(chunk) # ou juste super().buildCommandLine(chunk)
+        node = chunk.node
+        if node.sfmData.value:
+            cmdLine = cmdLine + " --sfmData " + node.sfmData.value
+        else:
+            cmdLine = cmdLine + " --alembicFile " + node.alembicFile.value
+            cmdLine = cmdLine + " --alembicPath " + node.alembicPath.value
+        cmdLine = cmdLine + " --result_dir " + node.output.value
+        return cmdLine
+
+    inputs = [
+        desc.File(
+            name='sfmData',
+            label='sfmData',
+            description='',
+            value='',
+        ),
+
+        desc.File(
+            name="alembicFile",
+            label="Alembic file",
+            description="Alembic file",
+            value="",
+        ),
+        
+        desc.File(
+            name="alembicPath",
+            label="Alembic path",
+            description="Path to the camera in the alembic file",
+            value="",
+        ),
+        
+        desc.GroupAttribute(
+            name="defaultCameraAttributes",
+            label="Default Camera",
+            description="Intrinsics to use. If empty we will try to guess them from the other inputs",
+            groupDesc=[
+                desc.IntParam(
+                    name="width",
+                    label="W",
+                    description="",
+                    value=1920,
+                ),
+                desc.IntParam(
+                    name="height",
+                    label="H",
+                    description="",
+                    value=1080,
+                ),
+                desc.FloatParam(
+                    name="focal",
+                    label="focal length",
+                    description="",
+                    value=50.0,
+                ),
+            ],
+        ),
+        
+        desc.File(
+            name="rezEnvName",
+            label="Rez package name",
+            description="Name (with path if necessary) of the rez package into which the computation should be executed.",
+            value=" ".join(rez_env),
+            invalidate=False,
+            group="",
+            advanced=True,
+            exposed=False,
+        ),
+    ]
+
+    outputs = [
+        desc.File(
+            name="output",
+            label="Output",
+            description="Output folder.",
+            value="{nodeCacheFolder}",
+        ),
+        
+        desc.File(
+            name="cameraPoses",
+            label="Camera Poses",
+            description="SFM containing poses.",
+            value="{nodeCacheFolder}/sfmData.sfm",
+        )
+    ]

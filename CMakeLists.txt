@@ -6,14 +6,14 @@ set(PROJECT_VERSION "0.1.0")
 project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES NONE)
 
 
-install(DIRECTORY "nodes/optim/"
-    DESTINATION "${CMAKE_INSTALL_PREFIX}/mrGSplat/optim/meshroom/gSplatNodesOptim"
+install(DIRECTORY "nodes/commandLineNodes/"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/mrGSplat/commandLineNodes/meshroom/gSplatCommandLineNodes"
     PATTERN "*.pyi" EXCLUDE
     PATTERN "__pycache__" EXCLUDE
 )
 
-install(DIRECTORY "nodes/utils/"
-    DESTINATION "${CMAKE_INSTALL_PREFIX}/mrGSplat/utils/meshroom/gSplatNodesUtils"
+install(DIRECTORY "nodes/nodes/"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/mrGSplat/nodes/meshroom/gSplatNodes"
     PATTERN "*.pyi" EXCLUDE
     PATTERN "__pycache__" EXCLUDE
 )
