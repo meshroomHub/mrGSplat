@@ -79,14 +79,31 @@ class ExtractPosesFromSfm(desc.Node):
             raise SystemError(f"Could not load sfm file {refSfmPath}")
         intrinsicsToKeep = list(refSfmContent.getIntrinsics().iterkeys())
         
-        # Filter sfm
-        poseIdToRemove = []
-        for view in sfmContent.getViews().itervalues():
+        # Get elements to remove
+        poseIdsToRemove = []
+        viewIdsToRemove = []
+        intrinsicIdsToRemove = []
+        for viewId, view in sfmContent.getViews().iteritems():
             intrinsicId = view.getIntrinsicId()
             if intrinsicId not in intrinsicsToKeep:
-                poseIdToRemove.append(view.getPoseId())
-        for poseId in poseIdToRemove:
+                poseIdsToRemove.append(view.getPoseId())
+                viewIdsToRemove.append(viewId)
+        for intrinsicId in sfmContent.getIntrinsics().iterkeys():
+            if intrinsicId not in intrinsicsToKeep:
+                intrinsicIdsToRemove.append(intrinsicId)
+        # Erase poses
+        print(f"Erase {len(poseIdsToRemove)} poses : \n{poseIdsToRemove}")
+        # sfmContent.getPoses().erase(poseIdsToRemove)
+        for poseId in poseIdsToRemove:
             sfmContent.erasePose(poseId)
+        # Erase views
+        print(f"Erase {len(viewIdsToRemove)} views : \n{viewIdsToRemove}")
+        for viewId in viewIdsToRemove:
+            sfmContent.getViews().erase(viewId)
+        # Erase intrinsics
+        print(f"Erase {len(intrinsicIdsToRemove)} intrinsics : \n{intrinsicIdsToRemove}")
+        for intrinsicId in intrinsicIdsToRemove:
+            sfmContent.getIntrinsics().erase(intrinsicId)
         
         # Save sfm
         chunk.logger.info(f"Save SFM data")

@@ -22,7 +22,7 @@ class ImportAlembicCamera(desc.CommandLineNode):
             cmdLine = cmdLine + " --sfmData " + node.sfmData.value
         else:
             cmdLine = cmdLine + " --alembicFile " + node.alembicFile.value
-            cmdLine = cmdLine + " --alembicPath " + node.alembicPath.value
+            cmdLine = cmdLine + " --alembicPath " + node.cameraPath.value
         cmdLine = cmdLine + " --result_dir " + node.output.value
         return cmdLine
 
@@ -42,7 +42,7 @@ class ImportAlembicCamera(desc.CommandLineNode):
         ),
         
         desc.File(
-            name="alembicPath",
+            name="cameraPath",
             label="Alembic path",
             description="Path to the camera in the alembic file",
             value="",
@@ -51,7 +51,7 @@ class ImportAlembicCamera(desc.CommandLineNode):
         desc.GroupAttribute(
             name="defaultCameraAttributes",
             label="Default Camera",
-            description="Intrinsics to use. If empty we will try to guess them from the other inputs",
+            description="Intrinsics to use.",
             groupDesc=[
                 desc.IntParam(
                     name="width",
@@ -66,10 +66,22 @@ class ImportAlembicCamera(desc.CommandLineNode):
                     value=1080,
                 ),
                 desc.FloatParam(
+                    name="sensorWidth",
+                    label="Sensor Width",
+                    description="",
+                    value=36.0,
+                ),
+                desc.FloatParam(
+                    name="sensorHeight",
+                    label="Sensor Height",
+                    description="",
+                    value=20.25,
+                ),
+                desc.FloatParam(
                     name="focal",
                     label="focal length",
                     description="",
-                    value=50.0,
+                    value=26.5,
                 ),
             ],
         ),
@@ -98,6 +110,6 @@ class ImportAlembicCamera(desc.CommandLineNode):
             name="cameraPoses",
             label="Camera Poses",
             description="SFM containing poses.",
-            value="{nodeCacheFolder}/sfmData.sfm",
+            value="{nodeCacheFolder}/sfmData.json",
         )
     ]

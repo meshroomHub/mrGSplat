@@ -3,6 +3,10 @@ __version__ = "1.0"
 from meshroom.core import desc
 
 
+DOC = """
+This node will initialize splats to make sure the model is initialized with correct colors.
+"""
+
 class InitializeSplats(desc.CommandLineNode):
     
     gpu = desc.Level.INTENSIVE
@@ -10,9 +14,7 @@ class InitializeSplats(desc.CommandLineNode):
     ram = desc.Level.INTENSIVE
 
     category = 'Gsplat'
-    documentation = '''
-    This node will initialize splats to make sure the model is initialized with correct colors.
-    '''
+    documentation = DOC
     
     commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingInit --sfm {sfmValue} --resultDirectory {cache}/{nodeType}/{uid}'
 
@@ -35,18 +37,21 @@ class InitializeSplats(desc.CommandLineNode):
             advanced=True,
             exposed=False,
         ),
+        
         desc.File(
             name="sfm",
             label="sfmData",
             description="SfMData with the views, poses and intrinsics to use.",
             value="",
         ),
+        
         desc.File(
             name="masksFolder",
             label="masksFolder",
             description="Masks folder.",
             value="",
         ),
+        
         desc.File(
             name="metadataFolder",
             label="metadataFolder",
@@ -62,12 +67,14 @@ class InitializeSplats(desc.CommandLineNode):
             description="Output folder.",
             value="{nodeCacheFolder}",
         ),
+        
         desc.File(
             name="sfmData",
             label="SfmData",
             description="Updated SFM data",
             value="{nodeCacheFolder}/sfm.json", 
         ),
+        
         desc.File(
             name="model",
             label="Model",

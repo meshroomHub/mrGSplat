@@ -1,12 +1,13 @@
 
 import os
 import argparse
-import numpy as np
-from numpy.linalg import inv as invert
-
 from shutil import copy
+import json
+
 import cask
 import imath
+import numpy as np
+from numpy.linalg import inv as invert
 from scipy.spatial.transform import Rotation as R
 
 
@@ -22,6 +23,24 @@ class Quaternion:
         r = R.from_matrix(matrix)
         # return cls(*r.as_quat(scalar_first=True))
         return cls(*r.as_quat())
+    
+    def __str__(self):
+        return f"<Quaternion {self.w:.05f} {self.x:.05f} {self.y:.05f} {self.z:.05f}>"
+
+
+class Rotation:
+    def __init__(self, matrix):
+        self.matrix = matrix
+    
+    def as_quat(self):
+        return Quaternion.from_matrix(self.matrix)
+    
+    def to_list(self):
+        return np.reshape(np.transpose(self.matrix), 9)
+    
+    def __str__(self):
+        vals = ", ".join([f"{x:.05f}" for x in self.to_list()])
+        return f"<Rotation {vals}>"
 
 
 class Vector:
@@ -32,16 +51,48 @@ class Vector:
         self.x = x
         self.y = y
         self.z = z
+    
+    def to_list(self):
+        return [self.x, self.y, self.z]
+    
+    def __str__(self):
+        return f"<Vector {self.x:.03f} {self.y:.03f} {self.z:.03f}>"
 
 
 class CameraIntrinsics:
-    # TODO
-    
-    def __init__(self):
-        pass
+    def __init__(self, width=1920, height=1080, focalLength=26.5, sensorWidth=36, sensorHeight=20.25):
+        self.width = width
+        self.height = height
+        self.focalLength = focalLength
+        self.sensorWidth = sensorWidth
+        self.sensorHeight = sensorHeight
     
     def toDict(self):
-        pass
+        return {
+            "intrinsicId": str(id(self)),
+            "width": str(self.width),
+            "height": str(self.height),
+            "sensorWidth": str(self.sensorWidth),
+            "sensorHeight": str(self.sensorHeight),
+            "serialNumber": "",
+            "type": "pinhole",
+            "initializationMode": "unknown",
+            "initialFocalLength": "-1",
+            "focalLength": str(float(self.focalLength)),
+            "pixelRatio": "1",
+            "pixelRatioLocked": "true",
+            "offsetLocked": "false",
+            "scaleLocked": "false",
+            "principalPoint": ["0", "0"],
+            "distortionLocked": "false",
+            "distortionInitializationMode": "none",
+            "distortionParams": ["0", "0", "0"],
+            "undistortionOffset": ["0", "0"],
+            "undistortionParams": "",
+            "distortionType": "radialk3",
+            "undistortionType": "none",
+            "locked": "false"
+        }
 
 
 class CameraPoses:
@@ -56,6 +107,7 @@ class CameraPoses:
         for i in range(4):
             for j in range(4):
                 T[i][j] = mat[j][i]
+        center = T[:3,3] * np.array([1, -1, -1])
 
         # convert from computer graphics convention (opengl-like) to computer vision
         M = np.identity(4)
@@ -72,13 +124,26 @@ class CameraPoses:
                 rotate[row_i][col_i]   = T2[row_i][col_i]
             # Translation
             translate[row_i] = T2[row_i][3]
-        self.poses[frame_id] = (Quaternion.from_matrix(rotate), Vector(*translate))
+        self.poses[frame_id] = (Rotation(rotate), Vector(*center), Vector(*translate))
     
-    def get_pose(self, frame_id):
-        pose = self.poses[frame_id]
-        av_pose = None
-        # TODO : create pose for alicevision format
-        return av_pose
+    def to_format(self):
+        poses = []
+        for poseId, pose in self.poses.items():
+            rotation, center, _ = pose
+            poseDict = {
+                "poseId": str(poseId),
+                "pose": {
+                    "transform": {
+                        "rotation": [str(x) for x in rotation.to_list()],
+                        "center": [str(x) for x in center.to_list()]
+                    },
+                    "locked": "false",
+                    "rotationOnly": "false",
+                    "removable": "true"
+                }
+            }
+            poses.append(poseDict)
+        return poses
 
 
 def get_poses_from_sfm(archive, path) -> CameraPoses:
@@ -94,17 +159,6 @@ def get_poses_from_sfm(archive, path) -> CameraPoses:
         # mat = cabObj.properties[".geom/.core"].values[0]
         poses.add_pose(frame_index, transform)
     return poses
-
-
-def create_sfm_with_poses(cameraPoses: CameraPoses, intrinsics: CameraIntrinsics) -> dict:
-    poses = []
-    for frame_id in cameraPoses.poses.keys():
-        poses.append(cameraPoses.get_pose(frame_id))
-    sfmData = {
-        "intrinsics": [intrinsics.toDict()],
-        "poses": poses,
-    }
-    return sfmData
 
 
 def get_poses_from_abc(archive, path) -> CameraPoses:
@@ -132,7 +186,7 @@ def main(args):
             if not os.path.exists(os.path.join(sfmData, filename)):
                 filename = "cloud_and_poses.abc"
             srcAlembicFilePath = os.path.join(sfmData, filename)
-        alembicPath = "mvgRoot/mvgCameras"
+        alembicPath = "/mvgRoot/mvgCameras"
     
     if not os.path.exists(srcAlembicFilePath):
         # chunk.logger.error(f"Could not find alembic file {srcAlembicFilePath}")
@@ -149,10 +203,26 @@ def main(args):
     # Get poses
     cameraPoses = get_poses_from_sfm(archive, alembicPath) if camerasFromSfm else get_poses_from_abc(archive, alembicPath)
     
+    # Get intrinsic
+    intrinsicsArgs = {
+        "width": args.width,
+        "height": args.height,
+        "sensorWidth": args.sensorWidth,
+        "sensorHeight": args.sensorHeight,
+        "focalLength": args.focalLength
+    }
+    intrinsic = CameraIntrinsics(**intrinsicsArgs)
+    
     # Export to file
-    outputFile = os.path.join(args.result_dir, "sfmData.sfm")
-    cameraPoses.exportToFile(outputFile)
-
+    outputFile = os.path.join(args.result_dir, "sfmData.json")
+    sfm_data = {
+        "version": ["1","2","12"],
+        "poses": cameraPoses.to_format(),
+        "intrinsics": [intrinsic.toDict()]
+    }
+    with open(outputFile, 'w') as f:
+        json.dump(sfm_data, f, indent=4)
+    
 
 if __name__ == "__main__":
     """
@@ -163,6 +233,7 @@ if __name__ == "__main__":
         --alembicFile alembicFile --alembicPath alembicPath
     """
     parser = argparse.ArgumentParser()
+    # General params
     parser.add_argument(
         "--result_dir", type=str, required=True, help="Output folder"
     )
@@ -175,6 +246,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--alembicPath", type=str, required=False, help="Path in the alembic file"
     )
+    # Intrinsics
+    parser.add_argument("--width", type=int, default=1920, required=False, help="Camera width")
+    parser.add_argument("--height", type=int, default=1080, required=False, help="Camera height")
+    parser.add_argument("--sensorWidth", type=float, default=36, required=False, help="Sensor width")
+    parser.add_argument("--sensorHeight", type=float, default=20.25, required=False, help="Sensor height")
+    parser.add_argument("--focalLength", type=float, default=26.5, required=False, help="Focal length")
     
     args = parser.parse_args()
     
