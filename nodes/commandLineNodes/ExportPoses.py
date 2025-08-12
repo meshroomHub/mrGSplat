@@ -7,7 +7,7 @@ from meshroom.core import desc
 
 
 exe_path = os.path.join(os.path.dirname(__file__), 'scripts', 'exportPoses.py')
-rez_env = ["numpy", "pytorch"]
+rez_env = ["numpy", "pytorch", "scipy"]
 
 
 class ExportPoses(desc.CommandLineNode):
@@ -15,13 +15,20 @@ class ExportPoses(desc.CommandLineNode):
     category = 'Gsplat'
     documentation = ''''''
 
-    commandLine = 'rez env {rezEnvNameValue} -- python ' + exe_path + ' {modelValue} {nodeCacheFolder}'
+    commandLine = 'rez env {rezEnvNameValue} -- python ' + exe_path + ' {modelValue} {inputSfmDataValue} {nodeCacheFolder}'
 
     inputs = [
         desc.File(
             name='model',
             label='Model',
             description='',
+            value='',
+        ),
+        
+        desc.File(
+            name='inputSfmData',
+            label='Camera Poses',
+            description='SFM file with poses and views used for the training',
             value='',
         ),
         
