@@ -24,6 +24,18 @@ class ImportAlembicCamera(desc.CommandLineNode):
             cmdLine = cmdLine + " --alembicFile " + node.alembicFile.value
             cmdLine = cmdLine + " --alembicPath " + node.cameraPath.value
         cmdLine = cmdLine + " --result_dir " + node.output.value
+        # Default cam
+        defaultCam = node.defaultCameraAttributes
+        if defaultCam.width.value:
+            cmdLine = cmdLine + " --width " + str(defaultCam.width.value)
+        if defaultCam.height.value:
+            cmdLine = cmdLine + " --height " + str(defaultCam.height.value)
+        if defaultCam.sensorWidth.value:
+            cmdLine = cmdLine + " --sensorWidth " + str(defaultCam.sensorWidth.value)
+        if defaultCam.sensorHeight.value:
+            cmdLine = cmdLine + " --sensorHeight " + str(defaultCam.sensorHeight.value)
+        if defaultCam.focal.value:
+            cmdLine = cmdLine + " --focalLength " + str(defaultCam.focal.value)
         return cmdLine
 
     inputs = [

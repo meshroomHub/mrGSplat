@@ -93,6 +93,9 @@ class CameraIntrinsics:
             "undistortionType": "none",
             "locked": "false"
         }
+    
+    def __str__(self):
+        return f"<Intrinsic {str(id(self))} {self.width}x{self.height} (fl={self.focalLength})>"
 
 
 class CameraPoses:
@@ -144,6 +147,23 @@ class CameraPoses:
             }
             poses.append(poseDict)
         return poses
+    
+    def getViews(self, intrinsic):
+        views = []
+        inds = np.argsort(np.array(list(self.poses.keys())))
+        for frameIndex, poseId in enumerate(inds):
+            viewDict = {
+                "viewId": str(poseId),
+                "poseId": str(poseId),
+                "frameId": str(frameIndex),
+                "intrinsicId": str(id(intrinsic)),
+                "path": f"dummy_frame_{frameIndex:06d}.jpg",
+                "width": str(intrinsic.width),
+                "height": str(intrinsic.height),
+                "metadata": {}
+            }
+            views.append(viewDict)
+        return views
 
 
 def get_poses_from_sfm(archive, path) -> CameraPoses:
@@ -217,6 +237,7 @@ def main(args):
     outputFile = os.path.join(args.result_dir, "sfmData.json")
     sfm_data = {
         "version": ["1","2","12"],
+        "views": cameraPoses.getViews(intrinsic),
         "poses": cameraPoses.to_format(),
         "intrinsics": [intrinsic.toDict()]
     }
