@@ -1,26 +1,28 @@
 {
     "header": {
-        "releaseVersion": "2025.1.0-develop",
+        "releaseVersion": "2025.1.0",
         "fileVersion": "2.0",
         "nodesVersions": {
             "ApplyCalibration": "1.0",
             "CameraInit": "12.0",
             "ConvertSfMFormat": "2.0",
             "ExportImages": "1.0",
-            "ExtractPosesFromSfm": "1.0",
             "FeatureExtraction": "1.3",
             "FeatureMatching": "2.0",
+            "FilterMasks": "1.0",
             "GaussianSplattingOptim": "1.0",
             "GaussianSplattingRender": "1.0",
+            "ImageDetectionPrompt": "0.1",
             "ImageMatching": "2.0",
             "ImageMatchingMultiSfM": "1.0",
+            "ImageSegmentationBox": "0.2",
             "IntrinsicsTransforming": "1.0",
             "KeyframeSelection": "5.0",
             "PrepareImagesForGSplat": "1.0",
             "RelativePoseEstimating": "3.0",
-            "SfMBootStrapping": "4.0",
+            "SfMBootStrapping": "4.1",
             "SfMColorizing": "1.0",
-            "SfMExpanding": "2.0",
+            "SfMExpanding": "2.1",
             "SfMTransfer": "2.1",
             "SfMTransform": "3.1",
             "TracksBuilding": "1.0",
@@ -31,8 +33,8 @@
         "ApplyCalibration_2": {
             "nodeType": "ApplyCalibration",
             "position": [
-                359.0,
-                757.5
+                456,
+                2335
             ],
             "parallelization": {
                 "blockSize": 0,
@@ -42,7 +44,7 @@
             "uid": "8210e9931d6fa343350d8a48cbff4d3d470b5ddc",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{CameraInit_2.output}",
+                "input": "{CameraInit_1.output}",
                 "calibration": "",
                 "useJson": false,
                 "verboseLevel": "info"
@@ -57,11 +59,11 @@
                 "output": "{nodeCacheFolder}/sfmData.sfm"
             }
         },
-        "CameraInit_2": {
+        "CameraInit_1": {
             "nodeType": "CameraInit",
             "position": [
-                145.0,
-                757.5
+                151,
+                2536
             ],
             "parallelization": {
                 "blockSize": 0,
@@ -88,46 +90,8 @@
             "internalInputs": {
                 "invalidation": "",
                 "comment": "",
-                "label": "InitShot",
-                "color": "#575963"
-            },
-            "outputs": {
-                "output": "{nodeCacheFolder}/cameraInit.sfm"
-            }
-        },
-        "CameraInit_4": {
-            "nodeType": "CameraInit",
-            "position": [
-                77.0,
-                242.5
-            ],
-            "parallelization": {
-                "blockSize": 0,
-                "size": 0,
-                "split": 1
-            },
-            "uid": "59614963ab66dcbdd672ffc787b91949031774a4",
-            "internalFolder": "{cache}/{nodeType}/{uid}",
-            "inputs": {
-                "viewpoints": [],
-                "intrinsics": [],
-                "sensorDatabase": "${ALICEVISION_SENSOR_DB}",
-                "lensCorrectionProfileInfo": "${ALICEVISION_LENS_PROFILE_INFO}",
-                "lensCorrectionProfileSearchIgnoreCameraModel": true,
-                "defaultFieldOfView": 45.0,
-                "groupCameraFallback": "folder",
-                "rawColorInterpretation": "DCPLinearProcessing",
-                "colorProfileDatabase": "${ALICEVISION_COLOR_PROFILE_DB}",
-                "errorOnMissingColorProfile": true,
-                "viewIdMethod": "metadata",
-                "viewIdRegex": ".*?(\\d+)",
-                "verboseLevel": "info"
-            },
-            "internalInputs": {
-                "invalidation": "",
-                "comment": "",
-                "label": "InitPhotogrammetry",
-                "color": "#384a55"
+                "label": "",
+                "color": ""
             },
             "outputs": {
                 "output": "{nodeCacheFolder}/cameraInit.sfm"
@@ -136,18 +100,18 @@
         "ConvertSfMFormat_8": {
             "nodeType": "ConvertSfMFormat",
             "position": [
-                3039.0,
-                304.5
+                4173.75,
+                2506.5
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 0,
                 "split": 1
             },
-            "uid": "087ea163fcdb3050f0ff42690ef1dde934b073d8",
+            "uid": "1ec1f0a7e3709509dbc9ffde07becf24f690cd72",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{SfMTransfer_1.output}",
+                "input": "{SfMTransfer_2.output}",
                 "fileExt": "json",
                 "describerTypes": [
                     "dspsift"
@@ -171,18 +135,18 @@
                 "output": "{nodeCacheFolder}/sfm.{fileExtValue}"
             }
         },
-        "ExportImages_2": {
+        "ExportImages_3": {
             "nodeType": "ExportImages",
             "position": [
-                2570.5,
-                200.5
+                3759.5,
+                2450.0
             ],
             "parallelization": {
                 "blockSize": 40,
                 "size": 0,
                 "split": 0
             },
-            "uid": "1dfda1b2fe841f33c4b5cac1c429bc8b3951228c",
+            "uid": "6e70b9330606e99617a8846cc747f13f4c3ab559",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{IntrinsicsTransforming_2.input}",
@@ -191,37 +155,7 @@
                 "evCorrection": false,
                 "namingMode": "viewid",
                 "masksFolders": [],
-                "maskExtension": "exr",
-                "verboseLevel": "info"
-            },
-            "internalInputs": {
-                "invalidation": "",
-                "comment": "",
-                "label": "",
-                "color": "#384a55"
-            },
-            "outputs": {
-                "output": "{nodeCacheFolder}",
-                "undistorted": "{nodeCacheFolder}/<VIEW_ID>.{outputFileTypeValue}",
-                "outputSfMData": "{nodeCacheFolder}/sfm.abc"
-            }
-        },
-        "ExtractPosesFromSfm_1": {
-            "nodeType": "ExtractPosesFromSfm",
-            "position": [
-                4273,
-                804
-            ],
-            "parallelization": {
-                "blockSize": 0,
-                "size": 0,
-                "split": 1
-            },
-            "uid": "fad913b03bcac074009f92a08a2000d4868addc2",
-            "internalFolder": "{cache}/{nodeType}/{uid}",
-            "inputs": {
-                "sfmData": "{SfMExpanding_6.outputViewsAndPoses}",
-                "referenceSfmData": "{ApplyCalibration_2.output}",
+                "maskExtension": "png",
                 "verboseLevel": "info"
             },
             "internalInputs": {
@@ -231,26 +165,27 @@
                 "color": ""
             },
             "outputs": {
-                "outputFolder": "{nodeCacheFolder}",
-                "outputSfmFile": "{nodeCacheFolder}/sfm.json"
+                "output": "{nodeCacheFolder}",
+                "undistorted": "{nodeCacheFolder}/<VIEW_ID>.{outputFileTypeValue}",
+                "outputSfMData": "{nodeCacheFolder}/sfm.abc"
             }
         },
-        "FeatureExtraction_3": {
+        "FeatureExtraction_1": {
             "nodeType": "FeatureExtraction",
             "position": [
-                598.0,
-                858.5
+                896,
+                2534
             ],
             "parallelization": {
                 "blockSize": 40,
                 "size": 0,
                 "split": 0
             },
-            "uid": "0b182a5cb95ddd25db25fe260ab52f43e47e0f07",
+            "uid": "0f2ae7957a005baae032e0bfbba048f98c06caf6",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{ApplyCalibration_2.output}",
-                "masksFolder": "",
+                "masksFolder": "{ImageSegmentationBox_1.output}",
                 "maskExtension": "exr",
                 "maskInvert": false,
                 "describerTypes": [
@@ -277,110 +212,24 @@
                 "output": "{nodeCacheFolder}"
             }
         },
-        "FeatureExtraction_4": {
-            "nodeType": "FeatureExtraction",
-            "position": [
-                277.0,
-                242.5
-            ],
-            "parallelization": {
-                "blockSize": 40,
-                "size": 0,
-                "split": 0
-            },
-            "uid": "69336c00f762b7c56a716fa98d19af38e4fc4673",
-            "internalFolder": "{cache}/{nodeType}/{uid}",
-            "inputs": {
-                "input": "{CameraInit_4.output}",
-                "masksFolder": "",
-                "maskExtension": "png",
-                "maskInvert": false,
-                "describerTypes": [
-                    "dspsift"
-                ],
-                "describerPreset": "normal",
-                "maxNbFeatures": 0,
-                "describerQuality": "normal",
-                "contrastFiltering": "GridSort",
-                "relativePeakThreshold": 0.01,
-                "gridFiltering": true,
-                "workingColorSpace": "sRGB",
-                "forceCpuExtraction": true,
-                "maxThreads": 0,
-                "verboseLevel": "info"
-            },
-            "internalInputs": {
-                "invalidation": "",
-                "comment": "",
-                "label": "",
-                "color": "#384a55"
-            },
-            "outputs": {
-                "output": "{nodeCacheFolder}"
-            }
-        },
-        "FeatureMatching_10": {
+        "FeatureMatching_1": {
             "nodeType": "FeatureMatching",
             "position": [
-                2293.0,
-                566.5
+                1096,
+                2334
             ],
             "parallelization": {
                 "blockSize": 20,
                 "size": 0,
                 "split": 0
             },
-            "uid": "6cd85c609892be17341648f3809b35cec7f1e0a3",
+            "uid": "467983e5ccd97da374d1dc4637af23c3da580891",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{ImageMatchingMultiSfM_4.outputCombinedSfM}",
-                "featuresFolders": "{ImageMatchingMultiSfM_4.featuresFolders}",
-                "imagePairsList": "{ImageMatchingMultiSfM_4.output}",
-                "describerTypes": "{FeatureExtraction_3.describerTypes}",
-                "photometricMatchingMethod": "ANN_L2",
-                "geometricEstimator": "acransac",
-                "geometricFilterType": "fundamental_matrix",
-                "distanceRatio": 0.8,
-                "maxIteration": 50000,
-                "geometricError": 0.0,
-                "knownPosesGeometricErrorMax": 5.0,
-                "minRequired2DMotion": -1.0,
-                "maxMatches": 0,
-                "savePutativeMatches": false,
-                "crossMatching": false,
-                "guidedMatching": false,
-                "matchFromKnownCameraPoses": false,
-                "exportDebugFiles": false,
-                "verboseLevel": "info"
-            },
-            "internalInputs": {
-                "invalidation": "",
-                "comment": "",
-                "label": "",
-                "color": "#575963"
-            },
-            "outputs": {
-                "output": "{nodeCacheFolder}"
-            }
-        },
-        "FeatureMatching_6": {
-            "nodeType": "FeatureMatching",
-            "position": [
-                1172.0,
-                731.5
-            ],
-            "parallelization": {
-                "blockSize": 20,
-                "size": 0,
-                "split": 0
-            },
-            "uid": "cd997454d131aa0e8c96313720cecb4affadf2a4",
-            "internalFolder": "{cache}/{nodeType}/{uid}",
-            "inputs": {
-                "input": "{ImageMatching_4.input}",
-                "featuresFolders": "{ImageMatching_4.featuresFolders}",
-                "imagePairsList": "{ImageMatching_4.output}",
-                "describerTypes": "{FeatureExtraction_3.describerTypes}",
+                "input": "{ImageMatching_1.input}",
+                "featuresFolders": "{ImageMatching_1.featuresFolders}",
+                "imagePairsList": "{ImageMatching_1.output}",
+                "describerTypes": "{FeatureExtraction_1.describerTypes}",
                 "photometricMatchingMethod": "ANN_L2",
                 "geometricEstimator": "acransac",
                 "geometricFilterType": "fundamental_matrix",
@@ -410,15 +259,15 @@
         "FeatureMatching_7": {
             "nodeType": "FeatureMatching",
             "position": [
-                3426.0,
-                1068.5
+                2296,
+                2694
             ],
             "parallelization": {
                 "blockSize": 20,
                 "size": 0,
                 "split": 0
             },
-            "uid": "3df5d05f2c27dce26c175416d7d4505b22d51f2c",
+            "uid": "4f9b795d7be7c266171fba52cabc595c02ec13e1",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{ImageMatching_5.input}",
@@ -456,21 +305,21 @@
         "FeatureMatching_8": {
             "nodeType": "FeatureMatching",
             "position": [
-                3426.0,
-                913.5
+                2296,
+                2534
             ],
             "parallelization": {
                 "blockSize": 20,
                 "size": 0,
                 "split": 0
             },
-            "uid": "b396a50e62b2b4a7b7e2b47b9d85aba740946290",
+            "uid": "7a18b3d11d7dfd3e19f1cf06015530b68ff8f8ab",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{ImageMatchingMultiSfM_3.outputCombinedSfM}",
                 "featuresFolders": "{ImageMatchingMultiSfM_3.featuresFolders}",
                 "imagePairsList": "{ImageMatchingMultiSfM_3.output}",
-                "describerTypes": "{FeatureExtraction_3.describerTypes}",
+                "describerTypes": "{FeatureExtraction_1.describerTypes}",
                 "photometricMatchingMethod": "ANN_L2",
                 "geometricEstimator": "acransac",
                 "geometricFilterType": "fundamental_matrix",
@@ -497,72 +346,65 @@
                 "output": "{nodeCacheFolder}"
             }
         },
-        "FeatureMatching_9": {
-            "nodeType": "FeatureMatching",
+        "FilterMasks_2": {
+            "nodeType": "FilterMasks",
             "position": [
-                677.0,
-                242.5
-            ],
-            "parallelization": {
-                "blockSize": 20,
-                "size": 0,
-                "split": 0
-            },
-            "uid": "e9c56d201b27b36a647e5609dcc03c66f7b07891",
-            "internalFolder": "{cache}/{nodeType}/{uid}",
-            "inputs": {
-                "input": "{ImageMatching_6.input}",
-                "featuresFolders": "{ImageMatching_6.featuresFolders}",
-                "imagePairsList": "{ImageMatching_6.output}",
-                "describerTypes": "{FeatureExtraction_4.describerTypes}",
-                "photometricMatchingMethod": "ANN_L2",
-                "geometricEstimator": "acransac",
-                "geometricFilterType": "fundamental_matrix",
-                "distanceRatio": 0.8,
-                "maxIteration": 50000,
-                "geometricError": 0.0,
-                "knownPosesGeometricErrorMax": 5.0,
-                "minRequired2DMotion": -1.0,
-                "maxMatches": 0,
-                "savePutativeMatches": false,
-                "crossMatching": false,
-                "guidedMatching": false,
-                "matchFromKnownCameraPoses": false,
-                "exportDebugFiles": false,
-                "verboseLevel": "info"
-            },
-            "internalInputs": {
-                "invalidation": "",
-                "comment": "",
-                "label": "",
-                "color": "#384a55"
-            },
-            "outputs": {
-                "output": "{nodeCacheFolder}"
-            }
-        },
-        "GaussianSplattingOptim_4": {
-            "nodeType": "GaussianSplattingOptim",
-            "position": [
-                4276.0,
-                381.5
+                4053,
+                2750
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 1,
                 "split": 1
             },
-            "uid": "8a01c14687560f186446fbad2ce2eb05c2fa6dd5",
+            "uid": "7939092ed35d8db879b60bf9c25a63ef553689bb",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "rezEnvName": "gsplat==sonoleta aliceVision==sonoleta",
-                "sfm": "{PrepareImagesForGSplat_2.outputSfmFile}",
+                "maskFolder": "{ImageSegmentationBox_1.output}",
+                "inputSfM": "{ImageSegmentationBox_1.input}",
+                "filterType": "erosion",
+                "keepFilename": true,
+                "extension": "exr",
+                "kernel_size": 10,
+                "kernel_shape": "rect",
+                "iterations": 5,
+                "use_of": false,
+                "smoothing_strength": 0.05,
+                "verboseLevel": "info"
+            },
+            "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
+                "color": "#B61518"
+            },
+            "outputs": {
+                "outputFolder": "{nodeCacheFolder}",
+                "masks": "{nodeCacheFolder}/<FILESTEM>.exr"
+            }
+        },
+        "GaussianSplattingOptim_3": {
+            "nodeType": "GaussianSplattingOptim",
+            "position": [
+                4648.5,
+                2665.0
+            ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "c17e8f02e75003db21aa755b46496335fedbd055",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
+            "inputs": {
+                "rezEnvName": "gsplat aliceVision",
+                "sfm": "{PrepareImagesForGSplat_1.outputSfmFile}",
                 "mesh": "",
-                "dataFactor": 1,
-                "masksFolder": "",
+                "dataFactor": 2,
+                "masksFolder": "{PrepareImagesForGSplat_1.outputMasksFolder}",
                 "metadataFolder": "",
                 "resumeCheckpoint": "",
-                "n_steps": 6000,
+                "n_steps": 5000,
                 "custom_ckpts": false,
                 "save_steps": [],
                 "pose_opt": false
@@ -575,27 +417,65 @@
             },
             "outputs": {
                 "output": "{nodeCacheFolder}",
-                "model": "{nodeCacheFolder}/ckpts/ckpt_5999_rank0.pt",
-                "optimizedPoses": "{nodeCacheFolder}/ckpts/poses5999.sfm"
+                "model": "{nodeCacheFolder}/ckpts/ckpt_4999_rank0.pt",
+                "optimizedPoses": "{nodeCacheFolder}/ckpts/poses4999.sfm"
             }
         },
-        "GaussianSplattingRender_5": {
-            "nodeType": "GaussianSplattingRender",
+        "GaussianSplattingOptim_7": {
+            "nodeType": "GaussianSplattingOptim",
             "position": [
-                4535.0,
-                602.5
+                4863.0,
+                2471.0
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 1,
                 "split": 1
             },
-            "uid": "f4a1e08acd01fc36135da13f00f6ff46796da4fb",
+            "uid": "11bde61f086ce94c656d3c33c4a64ef07e924522",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "rezEnvName": "gsplat==sonoleta aliceVision==sonoleta",
-                "cameras": "{ExtractPosesFromSfm_1.outputSfmFile}",
-                "model": "{GaussianSplattingOptim_4.model}",
+                "rezEnvName": "gsplat aliceVision",
+                "sfm": "{PrepareImagesForGSplat_2.outputSfmFile}",
+                "mesh": "",
+                "dataFactor": 1,
+                "masksFolder": "{PrepareImagesForGSplat_2.outputMasksFolder}",
+                "metadataFolder": "",
+                "resumeCheckpoint": "{GaussianSplattingOptim_3.model}",
+                "n_steps": 15000,
+                "custom_ckpts": false,
+                "save_steps": [],
+                "pose_opt": false
+            },
+            "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
+                "color": "#E35C03"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}",
+                "model": "{nodeCacheFolder}/ckpts/ckpt_14999_rank0.pt",
+                "optimizedPoses": "{nodeCacheFolder}/ckpts/poses14999.sfm"
+            }
+        },
+        "GaussianSplattingRender_8": {
+            "nodeType": "GaussianSplattingRender",
+            "position": [
+                5084.0,
+                2478.0
+            ],
+            "parallelization": {
+                "blockSize": 0,
+                "size": 1,
+                "split": 1
+            },
+            "uid": "de0a880575675985c52d25b1ae1c5ed6195a8eac",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
+            "inputs": {
+                "rezEnvName": "gsplat aliceVision",
+                "cameras": "{GaussianSplattingOptim_7.sfm}",
+                "model": "{GaussianSplattingOptim_7.model}",
                 "resolutionFactor": 1,
                 "outputFormat": ".jpg",
                 "outputColorspace": "AUTO"
@@ -612,23 +492,65 @@
                 "render_folder": "{nodeCacheFolder}/renders"
             }
         },
+        "ImageDetectionPrompt_2": {
+            "nodeType": "ImageDetectionPrompt",
+            "position": [
+                431.0,
+                2821.0
+            ],
+            "parallelization": {
+                "blockSize": 50,
+                "size": 0,
+                "split": 0
+            },
+            "uid": "4b36539cd7890052605eb1c3ad338fd37798e685",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
+            "inputs": {
+                "input": "{CameraInit_1.output}",
+                "recognitionModelPath": "${RDS_RECOGNITION_MODEL_PATH}",
+                "detectionModelPath": "${RDS_DETECTION_MODEL_PATH}",
+                "detectionConfigPath": "${RDS_DETECTION_CONFIG_PATH}",
+                "prompt": "person",
+                "synonyms": "man\nwoman\nboy\ngirl\nhuman\npeople",
+                "forceDetection": false,
+                "thresholdDetection": 0.2,
+                "bboxMargin": 0,
+                "useGpu": true,
+                "outputBboxImage": false,
+                "keepFilename": false,
+                "extension": "jpg",
+                "verboseLevel": "info"
+            },
+            "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
+                "color": "#B61518"
+            },
+            "outputs": {
+                "output": "{nodeCacheFolder}",
+                "bboxes": "{nodeCacheFolder}/<VIEW_ID>.jpg"
+            }
+        },
         "ImageMatchingMultiSfM_3": {
             "nodeType": "ImageMatchingMultiSfM",
             "position": [
-                3223.0,
-                895.5
+                2096,
+                2534
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 0,
                 "split": 1
             },
-            "uid": "268040578f604005c44d67396584ae042a7e2dce",
+            "uid": "7fa61be1fe1fd157f0b9de396a2303e9f41d53dc",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{KeyframeSelection_2.outputSfMDataFrames}",
-                "inputB": "{SfMExpanding_5.output}",
-                "featuresFolders": "{TracksBuilding_5.featuresFolders}",
+                "inputB": "{SfMExpanding_1.output}",
+                "featuresFolders": [
+                    "{FeatureExtraction_1.output}"
+                ],
                 "method": "VocabularyTree",
                 "tree": "${ALICEVISION_VOCTREE}",
                 "weights": "",
@@ -650,64 +572,23 @@
                 "outputCombinedSfM": "{nodeCacheFolder}/combineSfM.sfm"
             }
         },
-        "ImageMatchingMultiSfM_4": {
-            "nodeType": "ImageMatchingMultiSfM",
-            "position": [
-                2097.0,
-                574.5
-            ],
-            "parallelization": {
-                "blockSize": 0,
-                "size": 0,
-                "split": 1
-            },
-            "uid": "8305abc020df06c961bef357103dbb08e6eb159d",
-            "internalFolder": "{cache}/{nodeType}/{uid}",
-            "inputs": {
-                "input": "{KeyframeSelection_2.outputSfMDataKeyframes}",
-                "inputB": "{SfMColorizing_6.output}",
-                "featuresFolders": [
-                    "{FeatureExtraction_4.output}",
-                    "{FeatureExtraction_3.output}"
-                ],
-                "method": "Exhaustive",
-                "tree": "${ALICEVISION_VOCTREE}",
-                "weights": "",
-                "matchingMode": "a/b",
-                "minNbImages": 200,
-                "maxDescriptors": 500,
-                "nbMatches": 40,
-                "nbNeighbors": 5,
-                "verboseLevel": "info"
-            },
-            "internalInputs": {
-                "invalidation": "",
-                "comment": "",
-                "label": "",
-                "color": "#575963"
-            },
-            "outputs": {
-                "output": "{nodeCacheFolder}/imageMatches.txt",
-                "outputCombinedSfM": "{nodeCacheFolder}/combineSfM.sfm"
-            }
-        },
-        "ImageMatching_4": {
+        "ImageMatching_1": {
             "nodeType": "ImageMatching",
             "position": [
-                906.0,
-                753.5
+                896,
+                2334
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 0,
                 "split": 1
             },
-            "uid": "81d11f32878ba634ae31ecd420825726060dd515",
+            "uid": "8b0ae558694e4978726c759f70b839417d4e50d9",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{KeyframeSelection_2.outputSfMDataKeyframes}",
                 "featuresFolders": [
-                    "{FeatureExtraction_3.output}"
+                    "{FeatureExtraction_1.output}"
                 ],
                 "method": "Exhaustive",
                 "tree": "${ALICEVISION_VOCTREE}",
@@ -731,20 +612,20 @@
         "ImageMatching_5": {
             "nodeType": "ImageMatching",
             "position": [
-                3226.0,
-                1068.5
+                2096,
+                2694
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 0,
                 "split": 1
             },
-            "uid": "0dec801435135c1289198de3a3afef13556bf960",
+            "uid": "8f0f127876a04b725ba437057ec15f7eb680cb09",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{ApplyCalibration_2.output}",
                 "featuresFolders": [
-                    "{FeatureExtraction_3.output}"
+                    "{FeatureExtraction_1.output}"
                 ],
                 "method": "Sequential",
                 "tree": "${ALICEVISION_VOCTREE}",
@@ -765,58 +646,58 @@
                 "output": "{nodeCacheFolder}/imageMatches.txt"
             }
         },
-        "ImageMatching_6": {
-            "nodeType": "ImageMatching",
+        "ImageSegmentationBox_1": {
+            "nodeType": "ImageSegmentationBox",
             "position": [
-                477.0,
-                242.5
+                631.0,
+                2821.0
             ],
             "parallelization": {
-                "blockSize": 0,
+                "blockSize": 50,
                 "size": 0,
-                "split": 1
+                "split": 0
             },
-            "uid": "a6b23f4a5caec2174ff9db1e13f287dad55bca7f",
+            "uid": "bbe75dbe83c207b707fb3e19bda9c4ecced49b8d",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{FeatureExtraction_4.input}",
-                "featuresFolders": [
-                    "{FeatureExtraction_4.output}"
-                ],
-                "method": "SequentialAndVocabularyTree",
-                "tree": "${ALICEVISION_VOCTREE}",
-                "weights": "",
-                "minNbImages": 200,
-                "maxDescriptors": 500,
-                "nbMatches": 40,
-                "nbNeighbors": 5,
+                "input": "{ImageDetectionPrompt_2.input}",
+                "bboxFolder": "{ImageDetectionPrompt_2.output}",
+                "nukeTracker": "",
+                "segmentationModelPath": "${RDS_SEGMENTATION_MODEL_PATH}",
+                "maskInvert": true,
+                "useGpu": true,
+                "keepFilename": true,
+                "extension": "exr",
+                "outputBboxImage": false,
                 "verboseLevel": "info"
             },
             "internalInputs": {
                 "invalidation": "",
                 "comment": "",
                 "label": "",
-                "color": "#384a55"
+                "color": "#B61518"
             },
             "outputs": {
-                "output": "{nodeCacheFolder}/imageMatches.txt"
+                "output": "{nodeCacheFolder}",
+                "masks": "{nodeCacheFolder}/<FILESTEM>.exr",
+                "bboxes": "{nodeCacheFolder}/bboxes_<FILESTEM>.jpg"
             }
         },
         "IntrinsicsTransforming_2": {
             "nodeType": "IntrinsicsTransforming",
             "position": [
-                2288.5,
-                211.5
+                3546.5,
+                2548.0
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 0,
                 "split": 1
             },
-            "uid": "8a2464d2500f029933d48ca746f1491b17781933",
+            "uid": "67e774e871f0e6f1db3edf839c769720d0535055",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{SfMColorizing_6.output}",
+                "input": "{SfMColorizing_3.output}",
                 "inputTracks": "",
                 "type": "pinhole",
                 "fakeFov": 90.0,
@@ -826,7 +707,7 @@
                 "invalidation": "",
                 "comment": "",
                 "label": "",
-                "color": "#384a55"
+                "color": ""
             },
             "outputs": {
                 "output": "{nodeCacheFolder}/sfmData.abc",
@@ -836,8 +717,8 @@
         "KeyframeSelection_2": {
             "nodeType": "KeyframeSelection",
             "position": [
-                605.0,
-                549.5
+                663,
+                2221
             ],
             "parallelization": {
                 "blockSize": 0,
@@ -903,23 +784,64 @@
                 "outputSfMDataFrames": "{nodeCacheFolder}/frames.sfm"
             }
         },
-        "PrepareImagesForGSplat_2": {
+        "PrepareImagesForGSplat_1": {
             "nodeType": "PrepareImagesForGSplat",
             "position": [
-                3993.0,
-                247.5
+                4432.5,
+                2658.0
             ],
             "parallelization": {
                 "blockSize": 40,
                 "size": 0,
                 "split": 0
             },
-            "uid": "820f73dcaef5fb7bae257b1e5745416c4b1f84cf",
+            "uid": "2e75681acba9379d5b1bfcb00952278b84f0f12d",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "sfmData": "{ConvertSfMFormat_8.output}",
-                "maskFolder": "",
-                "referenceSfm": "",
+                "maskFolder": "{FilterMasks_2.outputFolder}",
+                "referenceSfm": "{FilterMasks_2.inputSfM}",
+                "scale": "2",
+                "colorspaces": {
+                    "inputColorspace": "AUTO",
+                    "outputColorspace": "AUTO"
+                },
+                "forceExtension": "keep",
+                "verboseLevel": "info",
+                "forcePinhole": true
+            },
+            "internalInputs": {
+                "invalidation": "",
+                "comment": "",
+                "label": "",
+                "color": "#3D6953"
+            },
+            "outputs": {
+                "outputFolder": "{nodeCacheFolder}",
+                "outputSfmFile": "{nodeCacheFolder}/sfm.json",
+                "outputImages": "{nodeCacheFolder}/images/*",
+                "outputImageFolder": "{nodeCacheFolder}/images",
+                "outputMasks": "{nodeCacheFolder}/masks/*",
+                "outputMasksFolder": "{nodeCacheFolder}/masks"
+            }
+        },
+        "PrepareImagesForGSplat_2": {
+            "nodeType": "PrepareImagesForGSplat",
+            "position": [
+                4433.0,
+                2483.0
+            ],
+            "parallelization": {
+                "blockSize": 40,
+                "size": 0,
+                "split": 0
+            },
+            "uid": "306ac5399fb012cc683a1eef5531ea48aa64f53c",
+            "internalFolder": "{cache}/{nodeType}/{uid}",
+            "inputs": {
+                "sfmData": "{ConvertSfMFormat_8.output}",
+                "maskFolder": "{FilterMasks_2.outputFolder}",
+                "referenceSfm": "{FilterMasks_2.inputSfM}",
                 "scale": "1",
                 "colorspaces": {
                     "inputColorspace": "AUTO",
@@ -932,67 +854,70 @@
             "internalInputs": {
                 "invalidation": "",
                 "comment": "",
-                "label": "Scale_1",
+                "label": "",
                 "color": "#3D6953"
             },
             "outputs": {
                 "outputFolder": "{nodeCacheFolder}",
                 "outputSfmFile": "{nodeCacheFolder}/sfm.json",
+                "outputImages": "{nodeCacheFolder}/images/*",
                 "outputImageFolder": "{nodeCacheFolder}/images",
+                "outputMasks": "{nodeCacheFolder}/masks/*",
                 "outputMasksFolder": "{nodeCacheFolder}/masks"
             }
         },
-        "RelativePoseEstimating_2": {
+        "RelativePoseEstimating_1": {
             "nodeType": "RelativePoseEstimating",
             "position": [
-                1077.0,
-                242.5
+                1496,
+                2334
             ],
             "parallelization": {
                 "blockSize": 25,
                 "size": 0,
                 "split": 0
             },
-            "uid": "0e1d8f42f5aff0bd2e6364c291265248ec854d6a",
+            "uid": "5644b17f9aef566286d053637f496c0d27275960",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{TracksBuilding_4.input}",
-                "tracksFilename": "{TracksBuilding_4.output}",
+                "input": "{TracksBuilding_1.input}",
+                "tracksFilename": "{TracksBuilding_1.output}",
                 "enforcePureRotation": false,
-                "countIterations": 1024,
+                "countIterations": 50000,
                 "minInliers": 100,
-                "imagePairsList": "{FeatureMatching_9.imagePairsList}",
+                "imagePairsList": "{FeatureMatching_1.imagePairsList}",
                 "verboseLevel": "info"
             },
             "internalInputs": {
                 "invalidation": "",
                 "comment": "",
                 "label": "",
-                "color": "#384a55"
+                "color": "#575963"
             },
             "outputs": {
                 "output": "{nodeCacheFolder}"
             }
         },
-        "SfMBootStrapping_2": {
+        "SfMBootStrapping_1": {
             "nodeType": "SfMBootStrapping",
             "position": [
-                1277.0,
-                242.5
+                1696,
+                2334
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 0,
                 "split": 1
             },
-            "uid": "50c136d8f77441aabfa7a9620dcb78822ca3bf0b",
+            "uid": "44a1784bff7173d89a0d047af261c31331db85f8",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{RelativePoseEstimating_2.input}",
-                "tracksFilename": "{RelativePoseEstimating_2.tracksFilename}",
+                "input": "{RelativePoseEstimating_1.input}",
+                "tracksFilename": "{RelativePoseEstimating_1.tracksFilename}",
                 "meshFilename": "",
-                "pairs": "{RelativePoseEstimating_2.output}",
-                "minAngleInitialPair": 5.0,
+                "pairs": "{RelativePoseEstimating_1.output}",
+                "minAngleSoftInitialPair": 5.0,
+                "minAngleHardInitialPair": 1.0,
                 "maxAngleInitialPair": 40.0,
                 "initialPairA": "",
                 "initialPairB": "",
@@ -1002,57 +927,57 @@
                 "invalidation": "",
                 "comment": "",
                 "label": "",
-                "color": "#384a55"
+                "color": "#575963"
             },
             "outputs": {
                 "output": "{nodeCacheFolder}/bootstrap.abc",
                 "outputViewsAndPoses": "{nodeCacheFolder}/cameras.sfm"
             }
         },
-        "SfMColorizing_6": {
+        "SfMColorizing_3": {
             "nodeType": "SfMColorizing",
             "position": [
-                1860.0,
-                242.5
+                3297.5,
+                2536.0
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 0,
                 "split": 1
             },
-            "uid": "559b663588db62d6a085096ddd103b8b3b35f4ac",
+            "uid": "6b26dbcd819499081b2361400d94107031d0d2f4",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{SfMTransform_2.output}",
+                "input": "{SfMTransform_1.output}",
                 "verboseLevel": "info"
             },
             "internalInputs": {
                 "invalidation": "",
                 "comment": "",
                 "label": "",
-                "color": "#384a55"
+                "color": "#80766f"
             },
             "outputs": {
                 "output": "{nodeCacheFolder}/sfmData.abc"
             }
         },
-        "SfMExpanding_4": {
+        "SfMExpanding_1": {
             "nodeType": "SfMExpanding",
             "position": [
-                1477.0,
-                242.5
+                1896,
+                2334
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 0,
                 "split": 1
             },
-            "uid": "99a6bba0cd53e524431155d83eabdfc855a563aa",
+            "uid": "338f61e9544356dd79c15aab7f4518c2ead0e6d0",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{SfMBootStrapping_2.output}",
-                "tracksFilename": "{SfMBootStrapping_2.tracksFilename}",
-                "meshFilename": "{SfMBootStrapping_2.meshFilename}",
+                "input": "{SfMBootStrapping_1.output}",
+                "tracksFilename": "{SfMBootStrapping_1.tracksFilename}",
+                "meshFilename": "{SfMBootStrapping_1.meshFilename}",
                 "localizerEstimatorMaxIterations": 50000,
                 "localizerEstimatorError": 0.0,
                 "lockScenePreviouslyReconstructed": false,
@@ -1062,53 +987,10 @@
                 "maxImagesPerGroup": 30,
                 "bundleAdjustmentMaxOutliers": 50,
                 "minNumberOfObservationsForTriangulation": 2,
-                "minAngleForTriangulation": 3.0,
-                "minAngleForLandmark": 2.0,
-                "maxReprojectionError": 4.0,
-                "lockAllIntrinsics": false,
-                "minNbCamerasToRefinePrincipalPoint": 3,
-                "verboseLevel": "info"
-            },
-            "internalInputs": {
-                "invalidation": "",
-                "comment": "",
-                "label": "SfMExpandingPhotog",
-                "color": "#384a55"
-            },
-            "outputs": {
-                "output": "{nodeCacheFolder}/sfmExpanded.abc",
-                "outputViewsAndPoses": "{nodeCacheFolder}/cameras.sfm"
-            }
-        },
-        "SfMExpanding_5": {
-            "nodeType": "SfMExpanding",
-            "position": [
-                2961.0,
-                707.5
-            ],
-            "parallelization": {
-                "blockSize": 0,
-                "size": 0,
-                "split": 1
-            },
-            "uid": "c51826e96c9ef39ae09a790b99884af16d60d033",
-            "internalFolder": "{cache}/{nodeType}/{uid}",
-            "inputs": {
-                "input": "{TracksBuilding_5.input}",
-                "tracksFilename": "{TracksMerging_4.output}",
-                "meshFilename": "",
-                "localizerEstimatorMaxIterations": 50000,
-                "localizerEstimatorError": 0.0,
-                "lockScenePreviouslyReconstructed": true,
-                "useLocalBA": true,
-                "localBAGraphDistance": 1,
-                "nbFirstUnstableCameras": 30,
-                "maxImagesPerGroup": 30,
-                "bundleAdjustmentMaxOutliers": 50,
-                "minNumberOfObservationsForTriangulation": 2,
                 "minAngleForTriangulation": 1.0,
                 "minAngleForLandmark": 0.5,
                 "maxReprojectionError": 4.0,
+                "maxTriangulationError": 8.0,
                 "lockAllIntrinsics": false,
                 "minNbCamerasToRefinePrincipalPoint": 3,
                 "verboseLevel": "info"
@@ -1124,23 +1006,23 @@
                 "outputViewsAndPoses": "{nodeCacheFolder}/cameras.sfm"
             }
         },
-        "SfMExpanding_6": {
+        "SfMExpanding_5": {
             "nodeType": "SfMExpanding",
             "position": [
-                4020.0,
-                896.5
+                2896,
+                2534
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 0,
                 "split": 1
             },
-            "uid": "32537532b68015bbfc27f86a63d451ff7c0b836b",
+            "uid": "a7008324de2820fcf8c0d28fdee695eccb250143",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{TracksBuilding_6.input}",
+                "input": "{TracksBuilding_5.input}",
                 "tracksFilename": "{TracksMerging_3.output}",
-                "meshFilename": "",
+                "meshFilename": "{SfMExpanding_1.meshFilename}",
                 "localizerEstimatorMaxIterations": 50000,
                 "localizerEstimatorError": 0.0,
                 "lockScenePreviouslyReconstructed": false,
@@ -1153,6 +1035,7 @@
                 "minAngleForTriangulation": 1.0,
                 "minAngleForLandmark": 0.5,
                 "maxReprojectionError": 4.0,
+                "maxTriangulationError": 8.0,
                 "lockAllIntrinsics": false,
                 "minNbCamerasToRefinePrincipalPoint": 3,
                 "verboseLevel": "info"
@@ -1168,21 +1051,21 @@
                 "outputViewsAndPoses": "{nodeCacheFolder}/cameras.sfm"
             }
         },
-        "SfMTransfer_1": {
+        "SfMTransfer_2": {
             "nodeType": "SfMTransfer",
             "position": [
-                2798.0,
-                297.5
+                3985.75,
+                2502.5
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 0,
                 "split": 1
             },
-            "uid": "fcf742eaaf932099c6a7d2be84aba88c0688c6b3",
+            "uid": "ba8353e14999250f84ecc023cf72eb66754e5b88",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{ExportImages_2.outputSfMData}",
+                "input": "{ExportImages_3.outputSfMData}",
                 "reference": "{IntrinsicsTransforming_2.output}",
                 "method": "from_viewid",
                 "fileMatchingPattern": ".*\\/(.*?)\\.\\w{3}",
@@ -1203,21 +1086,21 @@
                 "outputViewsAndPoses": "{nodeCacheFolder}/cameras.sfm"
             }
         },
-        "SfMTransform_2": {
+        "SfMTransform_1": {
             "nodeType": "SfMTransform",
             "position": [
-                1674.0,
-                241.5
+                3096.5,
+                2535.0
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 0,
                 "split": 1
             },
-            "uid": "002d205b2c75d34f7d0683d50e321999626570df",
+            "uid": "9ba6fd3a8000fa0b494bf11e88c264e1c70d2c06",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{SfMExpanding_4.output}",
+                "input": "{SfMExpanding_5.output}",
                 "method": "auto",
                 "lineUp": "",
                 "tracksFile": "",
@@ -1252,69 +1135,33 @@
                 "invalidation": "",
                 "comment": "",
                 "label": "",
-                "color": "#384a55"
+                "color": "#80766f"
             },
             "outputs": {
                 "output": "{nodeCacheFolder}/sfmExpanded.abc",
                 "outputViewsAndPoses": "{nodeCacheFolder}/cameras.sfm"
             }
         },
-        "TracksBuilding_4": {
+        "TracksBuilding_1": {
             "nodeType": "TracksBuilding",
             "position": [
-                877.0,
-                242.5
+                1296,
+                2334
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 0,
                 "split": 1
             },
-            "uid": "67daa9c4603bfdeda2f2b6f1c3c40966a48efe6f",
+            "uid": "53c2f1dd67b54a6565d146017e4037f0a78104e5",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
-                "input": "{FeatureMatching_9.input}",
-                "featuresFolders": "{FeatureMatching_9.featuresFolders}",
+                "input": "{FeatureMatching_1.input}",
+                "featuresFolders": "{FeatureMatching_1.featuresFolders}",
                 "matchesFolders": [
-                    "{FeatureMatching_9.output}"
+                    "{FeatureMatching_1.output}"
                 ],
-                "describerTypes": "{FeatureMatching_9.describerTypes}",
-                "minInputTrackLength": 2,
-                "useOnlyMatchesFromInputFolder": false,
-                "filterTrackForks": false,
-                "verboseLevel": "info"
-            },
-            "internalInputs": {
-                "invalidation": "",
-                "comment": "",
-                "label": "",
-                "color": "#384a55"
-            },
-            "outputs": {
-                "output": "{nodeCacheFolder}/tracksFile.json"
-            }
-        },
-        "TracksBuilding_5": {
-            "nodeType": "TracksBuilding",
-            "position": [
-                2566.0,
-                759.5
-            ],
-            "parallelization": {
-                "blockSize": 0,
-                "size": 0,
-                "split": 1
-            },
-            "uid": "adbb3ea510542f79108f69c9834cf11db39228aa",
-            "internalFolder": "{cache}/{nodeType}/{uid}",
-            "inputs": {
-                "input": "{FeatureMatching_10.input}",
-                "featuresFolders": "{FeatureMatching_10.featuresFolders}",
-                "matchesFolders": [
-                    "{FeatureMatching_6.output}",
-                    "{FeatureMatching_10.output}"
-                ],
-                "describerTypes": "{FeatureMatching_10.describerTypes}",
+                "describerTypes": "{FeatureMatching_1.describerTypes}",
                 "minInputTrackLength": 2,
                 "useOnlyMatchesFromInputFolder": false,
                 "filterTrackForks": true,
@@ -1330,25 +1177,25 @@
                 "output": "{nodeCacheFolder}/tracksFile.json"
             }
         },
-        "TracksBuilding_6": {
+        "TracksBuilding_5": {
             "nodeType": "TracksBuilding",
             "position": [
-                3626.0,
-                913.5
+                2496,
+                2534
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 0,
                 "split": 1
             },
-            "uid": "7517fa105bc783116faa4e9c70fc3dcd6c69ef86",
+            "uid": "ea908a1cdff5fbf721900edd8bdcacca9493b814",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "input": "{FeatureMatching_8.input}",
                 "featuresFolders": "{FeatureMatching_8.featuresFolders}",
                 "matchesFolders": [
-                    "{FeatureMatching_8.output}",
-                    "{FeatureMatching_7.output}"
+                    "{FeatureMatching_7.output}",
+                    "{FeatureMatching_8.output}"
                 ],
                 "describerTypes": "{FeatureMatching_8.describerTypes}",
                 "minInputTrackLength": 5,
@@ -1369,20 +1216,20 @@
         "TracksMerging_3": {
             "nodeType": "TracksMerging",
             "position": [
-                3822.0,
-                852.5
+                2696,
+                2534
             ],
             "parallelization": {
                 "blockSize": 0,
                 "size": 1,
                 "split": 1
             },
-            "uid": "d0bea3620949c24945bec94d90f80c2cc24102a3",
+            "uid": "80947b79b3178b404a702f9dc98ed6fd8bf3571a",
             "internalFolder": "{cache}/{nodeType}/{uid}",
             "inputs": {
                 "inputs": [
-                    "{TracksBuilding_6.output}",
-                    "{SfMExpanding_5.tracksFilename}"
+                    "{TracksBuilding_5.output}",
+                    "{SfMExpanding_1.tracksFilename}"
                 ],
                 "verboseLevel": "info"
             },
@@ -1391,36 +1238,6 @@
                 "comment": "",
                 "label": "",
                 "color": "#80766f"
-            },
-            "outputs": {
-                "output": "{nodeCacheFolder}/tracks.json"
-            }
-        },
-        "TracksMerging_4": {
-            "nodeType": "TracksMerging",
-            "position": [
-                2764.0,
-                732.5
-            ],
-            "parallelization": {
-                "blockSize": 0,
-                "size": 1,
-                "split": 1
-            },
-            "uid": "ef858b90fd2bee53ea974fa7d5e90a8e2eb67eca",
-            "internalFolder": "{cache}/{nodeType}/{uid}",
-            "inputs": {
-                "inputs": [
-                    "{TracksBuilding_5.output}",
-                    "{TracksBuilding_4.output}"
-                ],
-                "verboseLevel": "info"
-            },
-            "internalInputs": {
-                "invalidation": "",
-                "comment": "",
-                "label": "",
-                "color": "#575963"
             },
             "outputs": {
                 "output": "{nodeCacheFolder}/tracks.json"
