@@ -5,7 +5,7 @@ from meshroom.core import desc
 
 class GaussianSplattingOptim(desc.CommandLineNode):
     
-    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingOptim --sfm {sfmValue} --resultDirectory {cache}/{nodeType}/{uid} --data_factor {dataFactorValue} --maxSteps {n_stepsValue} --evalSteps'
+    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingOptim --sfm {sfmValue} --resultDirectory {nodeCacheFolder} --data_factor {dataFactorValue} --maxSteps {n_stepsValue} --evalSteps'
 
     gpu = desc.Level.INTENSIVE
     cpu = desc.Level.NORMAL
