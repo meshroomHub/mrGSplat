@@ -7,12 +7,14 @@ from meshroom.core import desc
 from pyalicevision import sfmData, sfmDataIO
 
 
-DOC = """Allow to extract poses that are coming from a sfm file.
+DOC = """# ExtractPosesFromSfm
+
+Allow to extract poses that are coming from a sfm file.
 In some cases, for example when we use a ImageMatchingMultiSfm node, we have
 poses from multiple intrinsics on the same file.
 This node allows to extract the poses that match intrinsics found on on a second sfm
 """
-            
+    
 
 class ExtractPosesFromSfm(desc.Node):
 

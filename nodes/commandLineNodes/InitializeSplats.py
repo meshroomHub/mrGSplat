@@ -3,9 +3,11 @@ __version__ = "1.0"
 from meshroom.core import desc
 
 
-DOC = """
+DOC = """# InitializeSplats (Experimental)
+
 This node will initialize splats to make sure the model is initialized with correct colors.
 """
+
 
 class InitializeSplats(desc.CommandLineNode):
     
@@ -16,7 +18,8 @@ class InitializeSplats(desc.CommandLineNode):
     category = 'Gsplat'
     documentation = DOC
     
-    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingInit --sfm {sfmValue} --resultDirectory {cache}/{nodeType}/{uid}'
+    # commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingInit --sfm {sfmValue} --resultDirectory {cache}/{nodeType}/{uid}'
+    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingInit --sfm {sfmValue} --resultDirectory {nodeCacheFolder}'
 
     def buildCommandLine(self, chunk):
         cmdLine = super(InitializeSplats, self).buildCommandLine(chunk) # ou juste super().buildCommandLine(chunk)

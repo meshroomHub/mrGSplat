@@ -8,10 +8,24 @@ exe_path = os.path.join(os.path.dirname(__file__), 'scripts', 'importAlembicCame
 rez_env = ["python-3.7", "scipy", "numpy", "cask"]
 
 
+DOC = """# ImportAlembicCamera
+
+This node will import camera poses from either :
+- An alembic file
+- A SFM file
+
+Additionally it offers the possibility to tweak camera parameters such as 
+- focal length
+- sensor size
+- image size
+- ...
+"""
+
+
 class ImportAlembicCamera(desc.CommandLineNode):
 
     category = 'Gsplat'
-    documentation = ''''''
+    documentation = DOC
     
     commandLine = 'rez env {rezEnvNameValue} -- python ' + exe_path
     

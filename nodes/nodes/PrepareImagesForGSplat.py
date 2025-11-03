@@ -12,6 +12,13 @@ from pyalicevision import image as avimg
 from pyalicevision.system import ConsoleProgressDisplay
 
 
+DOC = """# PrepareImagesForGSplat
+
+This node prepares a sfmData fiel so that it will work in GSplat.
+It allows resizing images and masks, changing colorspaces, changing image formats...
+"""
+
+
 SCALES = ['1', '2', '4', '8', '16', '32', '64']
 # Simply used to know which file are going to be considered as images when we list files from a folder
 VALID_IMG_EXT = (".exr", ".jpg", ".JPG", ".png", ".PNG")
@@ -179,7 +186,7 @@ class ViewsRange:
 class PrepareImagesForGSplat(desc.Node):
 
     category = 'Gsplat'
-    documentation = ''''''
+    documentation = DOC
     
     # size = ViewNodeSize("sfmData")
     size = desc.DynamicNodeSize("sfmData")

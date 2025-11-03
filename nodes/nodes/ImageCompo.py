@@ -3,11 +3,20 @@ __version__ = "1.0"
 import os
 from meshroom.core import desc
 
+
+DOC = """# ImageCompo
+
+This node allows to perform basic alpha compositing.
+For scenes when we use gsplat with masks it can be used to composite the elements removed 
+from gsplat with masks onto the rendered image, so that we can have an idea on the result
+"""
+
+
 class ImageCompo(desc.Node):
     #size = desc.DynamicNodeSize('inputFiles')
 
     category = 'Gsplat'
-    documentation = '''This node allows to perform basic alpha compositing.'''
+    documentation = DOC
 
     inputs = [
         desc.File(

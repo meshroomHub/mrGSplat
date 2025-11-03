@@ -3,9 +3,11 @@ __version__ = "1.0"
 from meshroom.core import desc
 
 
-DOC = """
+DOC = """# CleanSplats (Experimental and WIP, not working yet)
+
 This node will try to clean some splats that are too far away from a reference mesh
 """
+
 
 class CleanSplats(desc.CommandLineNode):
     

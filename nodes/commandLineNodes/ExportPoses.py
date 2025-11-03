@@ -7,13 +7,20 @@ from meshroom.core import desc
 
 
 exe_path = os.path.join(os.path.dirname(__file__), 'scripts', 'exportPoses.py')
-rez_env = ["numpy", "pytorch", "scipy"]
+rez_env = ["numpy", "pytorch", "scipy", "aliceVision"]
+
+
+DOC = """# ExportPoses (Experimental)
+
+Update the input sfmData with poses from a GSplat model.
+It can be used when we want to use GSplat to optimize camera poses
+"""
 
 
 class ExportPoses(desc.CommandLineNode):
 
     category = 'Gsplat'
-    documentation = ''''''
+    documentation = DOC
 
     commandLine = 'rez env {rezEnvNameValue} -- python ' + exe_path + ' {modelValue} {inputSfmDataValue} {nodeCacheFolder}'
 

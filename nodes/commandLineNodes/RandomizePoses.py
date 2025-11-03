@@ -10,10 +10,17 @@ exe_path = os.path.join(os.path.dirname(__file__), 'scripts', 'randomizePoses.py
 rez_env = ["numpy", "scipy"]
 
 
+DOC = """# RandomizePoses (Experimental)
+
+Randomize poses from an input SFM file by adding noise in translation and rotation.
+Used to test the pose optimization offered by GSplat.
+"""
+
+
 class RandomizePoses(desc.CommandLineNode):
 
     category = 'Gsplat'
-    documentation = '''Add noise to poses'''
+    documentation = DOC
 
     commandLine = 'rez env {rezEnvNameValue} -- python ' + exe_path + ' {inputSfmDataValue} {translationValue} {rotationValue} {outputSfmDataValue}'
 

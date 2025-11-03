@@ -13,8 +13,8 @@ class GaussianSplattingOptim(desc.CommandLineNode):
 
     category = 'Gsplat'
     documentation = '''
-    This node creates and optimizes a gaussian splatting model based on sfm data and images.
-    '''
+This node creates and optimizes a gaussian splatting model based on sfm data and images.
+'''
 
     def buildCommandLine(self, chunk):
         cmdLine = super(GaussianSplattingOptim, self).buildCommandLine(chunk) # ou juste super().buildCommandLine(chunk)

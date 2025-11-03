@@ -10,10 +10,20 @@ exe_path = os.path.join(os.path.dirname(__file__), 'scripts', 'sfmPoseDistance.p
 rez_env = ["numpy", "scipy"]
 
 
+DOC = """# SfmPoseDistance
+
+Check distance from poses of a sfm and a reference sfm file. 
+Use to test the pose optimization offered by GSplat : we add noise with RandomizePoses 
+to a SFM where we know the poses are correctly estimated, then we optimize 
+the poses with GSplat and check if we got closer
+"""
+
+
 class SfmPoseDistance(desc.CommandLineNode):
 
     category = 'Gsplat'
-    documentation = '''Check distance from poses of a sfm and a reference sfm file'''
+    documentation = ''''''
+    documentation = DOC
 
     commandLine = 'rez env {rezEnvNameValue} -- python ' + exe_path + ' {inputSfmValue} {referenceSfmValue} {diffFileValue}'
 

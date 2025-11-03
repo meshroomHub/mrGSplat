@@ -8,10 +8,17 @@ exe_path = os.path.join(os.path.dirname(__file__), 'scripts', 'convertGSplatMode
 rez_env = ["python-3.11", "pytorch", "numpy", "plyfile"]
 
 
+DOC = """# ConvertGSplatModel
+
+Converts a GSplat model to a model that can be used outside of Meshroom.
+The PLY format can be used with GSOPs in Houdini
+"""
+
+
 class ConvertGSplatModel(desc.CommandLineNode):
 
     category = 'Gsplat'
-    documentation = ''''''
+    documentation = DOC
 
     commandLine = 'rez env {rezEnvNameValue} -- python '+exe_path+' {inputValue} {formatValue} {outputValue}'
 

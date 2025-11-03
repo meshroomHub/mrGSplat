@@ -10,10 +10,16 @@ exe_path_abc = os.path.join(os.path.dirname(__file__), 'scripts', 'meshSampleAbc
 required_pkg_abc = ["numpy", "cask", "python-2.7"]
 
 
+DOC = """# Mesh Sample (Experimental)
+
+This node will sample N points on the GSplat model and export those as a SfMData file.
+"""
+
+
 class MeshSample(desc.CommandLineNode):
 
     category = 'Gsplat'
-    documentation = ''''''
+    documentation = DOC
 
     def buildCommandLine(self, chunk):
         node = chunk.node

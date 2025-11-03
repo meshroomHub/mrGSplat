@@ -7,10 +7,16 @@ exe_path = os.path.join(os.path.dirname(__file__), 'scripts', 'meshviz.py')
 rez_env = ["pytorch", "numpy", "trimesh"]
 
 
+DOC = """# MeshViz (Experimental)
+
+Exports splats as blobs in an obj file that we can visualize in Meshroom 3D Viewport.
+"""
+
+
 class MeshViz(desc.CommandLineNode):
 
     category = 'Gsplat'
-    documentation = ''''''
+    documentation = DOC
 
     commandLine = 'rez env {rezEnvNameValue} -- python '+exe_path+' {modelValue} {meshPreviewValue} {samplingValue}'
 
