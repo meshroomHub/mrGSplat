@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 
-set(PROJECT_NAME "gsplatNodes")
+set(PROJECT_NAME "mrGSplat")
 set(PROJECT_VERSION "0.1.0")
 project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES NONE)
 
