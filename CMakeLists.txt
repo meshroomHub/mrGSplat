@@ -6,6 +6,12 @@ set(PROJECT_VERSION "0.1.0")
 project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES NONE)
 
 
+install(DIRECTORY "gsplatInterface/"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/gsplatInterface"
+    PATTERN "*.pyi" EXCLUDE
+    PATTERN "__pycache__" EXCLUDE
+)
+
 install(DIRECTORY "nodes/commandLineNodes/"
     DESTINATION "${CMAKE_INSTALL_PREFIX}/mrGSplat/commandLineNodes/meshroom/gSplatCommandLineNodes"
     PATTERN "*.pyi" EXCLUDE
