@@ -14,68 +14,59 @@ COLOR_SPACES = [
 
 class GaussianSplattingRender(desc.CommandLineNode):
 
-    commandLine = 'gaussianSplattingRender --model {modelValue} --cameras {camerasValue} --data_factor {resolutionFactorValue} --output {nodeCacheFolder} --outputFormat {outputFormatValue} --outputColorspace {outputColorspaceValue}'
-    
+    commandLine = 'gaussianSplattingRender {allParams}'
+
     gpu = desc.Level.INTENSIVE
     cpu = desc.Level.NORMAL
     ram = desc.Level.INTENSIVE
-    
-    # TODO : split in multiple process -> probably useless because rendering is fast, what takes time is rez env and loading model
-    # size = desc.DynamicNodeSize('cameras')
-    # parallelization = desc.Parallelization(blockSize=40)
-    # commandLineRange = '--rangeStart {rangeStart} --rangeSize {rangeBlockSize}'
 
     category = 'Gsplat'
     documentation = '''
 This node computes the rasterization of a given gaussian splatting model from given viewpoints.
 '''
-    
+
     inputs = [
         desc.File(
             name="cameras",
             label="Cameras",
             description="SfMData with the views, poses and intrinsics to use (in JSON format).",
             value="",
+            group="allParams"
         ),
         desc.File(
             name="model",
             label="Model",
             description="Gaussian splats (.ckpt) to render.",
             value="",
-            group="",
-        ),
-        desc.IntParam(
-            name="resolutionFactor",
-            label="Subsampling factor",
-            description="How low in the resolution pyramid should the rendering be done. Ex: a value of 4 -> 16x less pixels",
-            value=1,
-            group="",
-            exposed=False,
+            group="allParams"
         ),
         desc.ChoiceParam(
-            name='outputFormat',
+            name='output_format',
             label='Output format',
             description='''auto will try to find the extension from views in the sfm (cameras) input''',
             value='auto',
             values=['auto', '.jpg', '.png', '.exr'],
             exclusive=True,
+            group="allParams"
         ),
         desc.ChoiceParam(
-            name='outputColorspace',
+            name='output_colorspace',
             label='Output colorspace',
             description='''''',
             value='AUTO',
             values=COLOR_SPACES,
             exclusive=True,
+            group="allParams"
         ),
     ]
 
     outputs = [
         desc.File(
-            name="output",
+            name="output_dir",
             label="Output",
             description="Output folder.",
             value="{nodeCacheFolder}",
+            group="allParams"
         ),
         desc.File(
             name="frames",
@@ -91,7 +82,7 @@ This node computes the rasterization of a given gaussian splatting model from gi
             label="Render Folder",
             description="Output folder.",
             value=os.path.join("{nodeCacheFolder}", 'renders'),
-            semantic="sequence"
+            semantic="sequence",
+            group="",
         ),
-
     ]

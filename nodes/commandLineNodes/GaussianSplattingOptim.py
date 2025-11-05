@@ -18,7 +18,8 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
 
     def buildCommandLine(self, chunk):
         node = chunk.node
-        cmdLine = self.commandLine + f" --data_factor {int(1/node.scaleFactor.value)}"
+        # Always 1 because the scale is updated in the intrinsics by the exportImages 
+        cmdLine = self.commandLine + f" --data_factor 1"
         saveSteps = str(node.max_steps.value)
         if node.custom_ckpts.value:
             saveSteps = " ".join([str(e.value) for e in node.save_steps.value])
@@ -41,13 +42,6 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             description="SfMData with the views, poses and intrinsics to use.",
             value="",
             group="allParams"
-        ),
-        desc.FloatParam(
-            name="scaleFactor",
-            label="Scale factor",
-            description="",
-            value=1.0,
-            group=""
         ),
         desc.BoolParam(
             name="image_alpha",

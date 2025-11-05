@@ -154,7 +154,6 @@ def main(local_rank: int, world_rank, world_size: int, args):
             )
         return renders
     
-
     cameras = get_cameras_from_sfm(args.cameras, args.data_factor)
     render_tab_state = GSplatRenderTabState()
     
@@ -192,13 +191,13 @@ def main(local_rank: int, world_rank, world_size: int, args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--ckpt", type=str, nargs="+", default=None, help="path to the .pt file"
+        "--model", dest="ckpt", type=str, nargs="+", default=None, help="path to the .pt file"
     )
     parser.add_argument(
         "-c", "--cameras", type=str, help="SFM file containing cameras (poses)"
     )
     parser.add_argument(
-        "-df", "--data_factor", type=str, help="Data factor"
+        "-df", "--data_factor", type=int, default=1, help="Data factor"
     )
     parser.add_argument(
         "--output_dir", type=str, default="results/", help="where to dump outputs"

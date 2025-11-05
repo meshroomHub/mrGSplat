@@ -60,8 +60,7 @@ class Config:
     image_alpha: bool = False
     metadata_folder: str = ""
     # Downsample factor for the dataset
-    scaleFactor: float = 0.25  # Not used
-    data_factor: int = 4
+    data_factor: int = 1
     # Directory to save results
     result_dir: str = "results/garden"
     # Random crop size for training  (experimental)
