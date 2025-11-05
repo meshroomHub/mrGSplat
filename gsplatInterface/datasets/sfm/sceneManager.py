@@ -24,19 +24,6 @@ from ..normalize import (
 from ..mesh import Mesh
 
 
-def get_masks(path_dir: Path, name_to_image_id: dict):
-    path_dir = Path(path_dir)
-    masks = {}
-    for image in path_dir.iterdir():
-        masks[name_to_image_id[image.stem]] = AvImage(str(image), greyscale=True, open=True).pixels
-    return masks
-
-def mask_path(image_path: Path):
-    mask_path_ = Path(str(image_path).replace("images", "masks"))
-    return mask_path_
-
-
-
 class SfmSceneManager:
     def __init__(self, path: Union[str, Path]):
         if isinstance(path, str):
@@ -133,11 +120,13 @@ class Parser:
                  normalize: Optional[bool] = False,
                  masksFolder: Optional[str] = None,
                  mesh: Optional[str] = None,
-                 metadataFolder: Optional[str] = None):
+                 metadataFolder: Optional[str] = None,
+                 image_alpha: bool = False):
         self.sfmFile = sfmFile
         self.factor = factor
         # TODO : not convienient to use different poses when we have normalization that depend on dataset
         self.normalize = False  # normalize  
+        self.image_alpha = image_alpha
         
         manager = SfmSceneManager(self.sfmFile)
         
@@ -401,73 +390,74 @@ class Dataset:
                 self.get_image(index)
         # Masks
         if parser.masks_exist:
-            self.masks = {}
-            self.mask_paths = {index: mask_path(self.parser.image_paths[index]) for index in self.indices}
-            # Pre-load masks
-            if pre_load_images:
-                for index in self.indices:
-                    self.get_mask(index)
+            raise ValueError("Parser mask is not supported. We use alpha to store masks")
+            # self.masks = {}
+            # self.mask_paths = {index: mask_path(self.parser.image_paths[index]) for index in self.indices}
+            # # Pre-load masks
+            # if pre_load_images:
+            #     for index in self.indices:
+            #         self.get_mask(index)
     
     def __len__(self):
         return len(self.indices)
     
     def get_image(self, index):
         if index not in self.images.keys():
-            self.images[index] = AvImage(self.parser.image_paths[index], open=True).pixels
+            self.images[index] = AvImage(self.parser.image_paths[index], alpha=self.parser.image_alpha, open=True)
         return self.images[index]
     
-    def get_mask(self, index):
-        if index not in self.masks.keys():
-            mask = AvImage(self.mask_paths[index], greyscale=True, open=True).pixels
-            if len(mask.shape) == 2:
-                self.masks[index] = mask
-            elif len(mask.shape) == 3:
-                self.masks[index] = mask[...,0]
-                print(f"[Caution] Mask (index={index}) is not in greyscale : shape={mask.shape}")
-            else:
-                raise ValueError("Mask (index={index}) has shape {mask.shape} which is not handled")
-        return self.masks[index]
+    # def get_mask(self, index):
+    #     if index not in self.masks.keys():
+    #         mask = AvImage(self.mask_paths[index], greyscale=True, open=True).pixels
+    #         if len(mask.shape) == 2:
+    #             self.masks[index] = mask
+    #         elif len(mask.shape) == 3:
+    #             self.masks[index] = mask[...,0]
+    #             print(f"[Caution] Mask (index={index}) is not in greyscale : shape={mask.shape}")
+    #         else:
+    #             raise ValueError("Mask (index={index}) has shape {mask.shape} which is not handled")
+    #     return self.masks[index]
     
-    def get_landmark_coordinates(self, item: int) -> Dict[int, Tuple[int, int, int]]:
-        """ For each item (image index) get the coordinates of each landmark
-        :return: { landmarkId: (x, y, depth), ... }
-        """
-        # Get camera matrix, intrinsics, image name and size
-        index = self.indices[item]
-        image_name = self.parser.image_names[index]
-        camera_id = self.parser.camera_ids[index]
-        W, H = self.parser.imsize_dict[camera_id]
-        K = self.parser.Ks_dict[camera_id].copy()
-        camtoworld = self.parser.camtoworlds[index]
-        # Projected points to image plane
-        worldtocam = np.linalg.inv(camtoworld)
-        point_indices = self.parser.point_indices[image_name]
-        points_world = self.parser.points[point_indices]
-        points_cam = (worldtocam[:3, :3] @ points_world.T + worldtocam[:3, 3:4]).T
-        points_proj = (K @ points_cam.T).T
-        points = points_proj[:, :2] / points_proj[:, 2:3]  # (M, 2)
-        depths = points_cam[:, 2]  # (M,)
-        # filter out points outside the image
-        mask = np.ones((len(point_indices)))
-        if self.parser.masks_exist:
-            maskImg = self.get_mask(index)
-            mask[:] = maskImg[points[:]] < 0.01
-        selector = (
-              (points[:, 0] >= 0)
-            & (points[:, 0] < W)
-            & (points[:, 1] >= 0)
-            & (points[:, 1] < H)
-            & (depths > 0)
-            & (mask[:] > 0)
-        )
-        point_indices = point_indices[selector]
-        # Get final result
-        landmarksCoords = {}
-        for landmarkId in point_indices:
-            x, y  = points[landmarkId]
-            depth = depths[landmarkId]
-            landmarksCoords[landmarkId] = (x, y, depth)
-        return landmarksCoords
+    # def get_landmark_coordinates(self, item: int) -> Dict[int, Tuple[int, int, int]]:
+    #     """ For each item (image index) get the coordinates of each landmark
+    #     :return: { landmarkId: (x, y, depth), ... }
+    #     """
+    #     # Get camera matrix, intrinsics, image name and size
+    #     index = self.indices[item]
+    #     image_name = self.parser.image_names[index]
+    #     camera_id = self.parser.camera_ids[index]
+    #     W, H = self.parser.imsize_dict[camera_id]
+    #     K = self.parser.Ks_dict[camera_id].copy()
+    #     camtoworld = self.parser.camtoworlds[index]
+    #     # Projected points to image plane
+    #     worldtocam = np.linalg.inv(camtoworld)
+    #     point_indices = self.parser.point_indices[image_name]
+    #     points_world = self.parser.points[point_indices]
+    #     points_cam = (worldtocam[:3, :3] @ points_world.T + worldtocam[:3, 3:4]).T
+    #     points_proj = (K @ points_cam.T).T
+    #     points = points_proj[:, :2] / points_proj[:, 2:3]  # (M, 2)
+    #     depths = points_cam[:, 2]  # (M,)
+    #     # filter out points outside the image
+    #     mask = np.ones((len(point_indices)))
+    #     if self.parser.masks_exist:
+    #         maskImg = self.get_mask(index)
+    #         mask[:] = maskImg[points[:]] < 0.01
+    #     selector = (
+    #           (points[:, 0] >= 0)
+    #         & (points[:, 0] < W)
+    #         & (points[:, 1] >= 0)
+    #         & (points[:, 1] < H)
+    #         & (depths > 0)
+    #         & (mask[:] > 0)
+    #     )
+    #     point_indices = point_indices[selector]
+    #     # Get final result
+    #     landmarksCoords = {}
+    #     for landmarkId in point_indices:
+    #         x, y  = points[landmarkId]
+    #         depth = depths[landmarkId]
+    #         landmarksCoords[landmarkId] = (x, y, depth)
+    #     return landmarksCoords
 
     def __getitem__(self, item: int) -> Dict[str, Any]:
         index = self.indices[item]
@@ -475,27 +465,31 @@ class Dataset:
         # image = imageio.imread(self.parser.image_paths[index])[..., :3]
         # All in memory:
         image = self.get_image(index)
+        pixels = image.pixels
         camera_id = self.parser.camera_ids[index]
         K = self.parser.Ks_dict[camera_id].copy()  # undistorted K
         camtoworlds = self.parser.camtoworlds[index]
         # Load from disk:
         # mask = imageio.imread(mask_path)[..., :3]
-        mask = self.get_mask(index) if self.parser.masks_exist else None
+        # mask = self.get_mask(index) if self.parser.masks_exist else None
+        mask = None
+        if image.hasAlpha:
+            mask = image.get_alpha_mask()
         image_name = self.parser.image_names[index]
 
         if self.patch_size is not None:
             # Random crop.
-            h, w = image.shape[:2]
+            h, w = pixels.shape[:2]
             x = np.random.randint(0, max(w - self.patch_size, 1))
             y = np.random.randint(0, max(h - self.patch_size, 1))
-            image = image[y : y + self.patch_size, x : x + self.patch_size]
+            pixels = pixels[y : y + self.patch_size, x : x + self.patch_size]
             K[0, 2] -= x
             K[1, 2] -= y
 
         data = {
             "K": torch.from_numpy(K).float(),
             "camtoworld": torch.from_numpy(camtoworlds).float(),
-            "image": torch.from_numpy(image).float(),
+            "image": torch.from_numpy(pixels).float(),
             "image_id": item,  # the index of the image in the dataset
             "image_name": image_name,
         }
@@ -517,9 +511,9 @@ class Dataset:
             # filter out points outside the image
             selector = (
                 (points[:, 0] >= 0)
-                & (points[:, 0] < image.shape[1])
+                & (points[:, 0] < pixels.shape[1])
                 & (points[:, 1] >= 0)
-                & (points[:, 1] < image.shape[0])
+                & (points[:, 1] < pixels.shape[0])
                 & (depths > 0)
             )
             points = points[selector]

@@ -61,9 +61,10 @@ class AvImage:
         else:
             return cls.get_colorspace("NO_CONVERSION")
     
-    def __init__(self, path, greyscale=False, open=False, colorspace=None):
+    def __init__(self, path, greyscale=False, alpha=False, open=False, colorspace=None):
         self.mode = "greyscale" if greyscale else "rgb" 
-        self.nb_channels = 1 if greyscale else 3
+        self.hasAlpha = alpha
+        self.nb_channels = 1 if greyscale else 3 + (1 if alpha else 0)
         self.path = str(path)
         self.buf = None
         if open:
@@ -90,10 +91,7 @@ class AvImage:
         return av_image
     
     def open(self, colorspace=None): 
-        im_shape = 3
-        if self.mode == "greyscale":
-            im_shape = 1
-        self.buf = self.open_RGB_image(self.path, im_shape=im_shape, colorspace=colorspace)
+        self.buf = self.open_RGB_image(self.path, im_shape=self.nb_channels, colorspace=colorspace)
     
     @classmethod
     def open_RGB_image(cls, p, im_shape=3, colorspace=None):
@@ -105,8 +103,10 @@ class AvImage:
             av_image = avimg.Image_float()
         elif im_shape == 3:
             av_image = avimg.Image_RGBfColor()
-        else:
+        elif im_shape == 4:
             av_image = avimg.Image_RGBAfColor()
+        else:
+            raise ValueError(f"Images with {im_shape} dimensions are not supported")
         # Read image
         avOptRead = avimg.ImageReadOptions(colorspace)
         try:
@@ -118,8 +118,13 @@ class AvImage:
     
     @property
     def pixels(self):
-        return self.buf.getNumpyArray()
+        img = self.buf.getNumpyArray()[:,:,:3]
+        return np.clip(img, 0, 1)
     
+    def get_alpha_mask(self):
+        img = self.buf.getNumpyArray()[:,:,3]
+        return np.clip(img, 0, 1)
+
     def resize(self, factor):
         # New size
         W = int(self.buf.width() / float(factor))
