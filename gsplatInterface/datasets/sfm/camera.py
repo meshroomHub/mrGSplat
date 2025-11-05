@@ -10,6 +10,7 @@ import numpy as np
 from scipy.optimize import root
 
 from pyalicevision import sfmData
+from pyalicevision import camera
 from pyalicevision.camera import IntrinsicBase
 
 IntrinsicsBaseType = (sfmData.IntrinsicBase, IntrinsicBase)
@@ -33,21 +34,24 @@ class SfmIntrinsic:
         intrinsicId, intrinsic = intrinsic
         typeErrMsg = f"Expected type Tuple[int, IntrinsicBase], element 2 has type {type(intrinsic)}: {intrinsic}"
         assert isinstance(intrinsic, IntrinsicsBaseType), typeErrMsg
+        pinholeIntrinsic = camera.Pinhole.cast(intrinsic)
         # Get intrinsic infos
-        hfov = intrinsic.getHorizontalFov()
-        sensorWidth = intrinsic.sensorWidth()
+        hfov = pinholeIntrinsic.getHorizontalFov()
+        sensorWidth = pinholeIntrinsic.sensorWidth()
         fx = (sensorWidth)/(2.0*math.tan(hfov/2.0))
-        vfov = intrinsic.getVerticalFov()
-        sensorHeight = intrinsic.sensorHeight()
+        vfov = pinholeIntrinsic.getVerticalFov()
+        sensorHeight = pinholeIntrinsic.sensorHeight()
         fy = (sensorHeight)/(2.0*math.tan(vfov/2.0))
+        # Get principal point
+        pp = pinholeIntrinsic.getOffset()  # .getPrincipalPoint()
         intrinsicDict = {
-            "type": intrinsic.getTypeStr(),
+            "type": pinholeIntrinsic.getTypeStr(),
             "focalLength": fx,
-            "width": intrinsic.w(),
-            "height": intrinsic.h(),
+            "width": pinholeIntrinsic.w(),
+            "height": pinholeIntrinsic.h(),
             "sensorWidth": sensorWidth, 
             "sensorHeight": sensorHeight, 
-            "principalPoint": intrinsic.getPrincipalPoint()
+            "principalPoint": pp
         }
         return cls(intrinsicId, intrinsicDict)
 
