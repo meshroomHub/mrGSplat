@@ -14,7 +14,7 @@ COLOR_SPACES = [
 
 class GaussianSplattingRender(desc.CommandLineNode):
 
-    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingRender --model {modelValue} --cameras {camerasValue} --data_factor {resolutionFactorValue} --output {nodeCacheFolder} --outputFormat {outputFormatValue} --outputColorspace {outputColorspaceValue}'
+    commandLine = 'gaussianSplattingRender --model {modelValue} --cameras {camerasValue} --data_factor {resolutionFactorValue} --output {nodeCacheFolder} --outputFormat {outputFormatValue} --outputColorspace {outputColorspaceValue}'
     
     gpu = desc.Level.INTENSIVE
     cpu = desc.Level.NORMAL
@@ -31,16 +31,6 @@ This node computes the rasterization of a given gaussian splatting model from gi
 '''
     
     inputs = [
-        desc.File(
-            name="rezEnvName",
-            label="Rez package name",
-            description="Name (with path if necessary) of the rez package into which the computation should be executed.",
-            value="gsplat-develop",
-            invalidate=False,
-            group="",
-            advanced=True,
-            exposed=False,
-        ),
         desc.File(
             name="cameras",
             label="Cameras",

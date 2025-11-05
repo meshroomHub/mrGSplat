@@ -14,7 +14,7 @@ class CleanSplats(desc.CommandLineNode):
     category = 'Gsplat'
     documentation = DOC
     
-    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingClean --model {modelValue} --mesh {meshValue} --metadata {metadataFolderValue} --outputModel {cleanedModelValue}'
+    commandLine = 'gaussianSplattingClean --model {modelValue} --mesh {meshValue} --metadata {metadataFolderValue} --outputModel {cleanedModelValue}'
 
     inputs = [
         desc.File(
@@ -36,16 +36,6 @@ class CleanSplats(desc.CommandLineNode):
             label="metadataFolder",
             description="Folder that can contain metadata files for gsplat.",
             value="",
-        ),
-        
-        desc.File(
-            name="rezEnvName",
-            label="Rez package name",
-            description="Name (with path if necessary) of the rez package into which the computation should be executed.",
-            value="gsplat-develop",
-            invalidate=False,
-            advanced=True,
-            exposed=False,
         ),
     ]
 

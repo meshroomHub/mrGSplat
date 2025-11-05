@@ -19,7 +19,7 @@ class InitializeSplats(desc.CommandLineNode):
     documentation = DOC
     
     # commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingInit --sfm {sfmValue} --resultDirectory {cache}/{nodeType}/{uid}'
-    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingInit --sfm {sfmValue} --resultDirectory {nodeCacheFolder}'
+    commandLine = 'gaussianSplattingInit --sfm {sfmValue} --resultDirectory {nodeCacheFolder}'
 
     def buildCommandLine(self, chunk):
         cmdLine = super(InitializeSplats, self).buildCommandLine(chunk) # ou juste super().buildCommandLine(chunk)
@@ -31,16 +31,6 @@ class InitializeSplats(desc.CommandLineNode):
         return cmdLine
 
     inputs = [
-        desc.File(
-            name="rezEnvName",
-            label="Rez package name",
-            description="Name (with path if necessary) of the rez package into which the computation should be executed.",
-            value="gsplat-develop",
-            invalidate=False,
-            advanced=True,
-            exposed=False,
-        ),
-        
         desc.File(
             name="sfm",
             label="sfmData",

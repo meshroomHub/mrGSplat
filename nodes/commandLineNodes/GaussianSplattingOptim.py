@@ -5,7 +5,7 @@ from meshroom.core import desc
 
 class GaussianSplattingOptim(desc.CommandLineNode):
     
-    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingOptim --sfm {sfmValue} --resultDirectory {nodeCacheFolder} --data_factor {dataFactorValue} --maxSteps {n_stepsValue} --evalSteps'
+    commandLine = "gaussianSplattingOptim"
 
     gpu = desc.Level.INTENSIVE
     cpu = desc.Level.NORMAL
@@ -17,37 +17,35 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
 '''
 
     def buildCommandLine(self, chunk):
-        cmdLine = super(GaussianSplattingOptim, self).buildCommandLine(chunk) # ou juste super().buildCommandLine(chunk)
+        # cmdLine = super(GaussianSplattingOptim, self).buildCommandLine(chunk) # ou juste super().buildCommandLine(chunk)
         node = chunk.node
+        cmdLine = "gaussianSplattingOptim"
+        cmdLine += f" --sfm {node.sfm.value}"
+        cmdLine += f" --resultDirectory {node.internalFolder}"
+        cmdLine += f" --data_factor {node.dataFactor.value}"
+        cmdLine += f" --maxSteps {node.n_steps.value}"
+        cmdLine += f" --evalSteps"
         if node.mesh.value:
-            cmdLine = cmdLine + " --mesh " + node.mesh.value
+            cmdLine += f" --mesh {node.mesh.value}"
         if node.masksFolder.value:
-            cmdLine = cmdLine + " --masksFolder " + node.masksFolder.value
+            cmdLine += f" --masksFolder {node.masksFolder.value}"
         if node.metadataFolder.value:
-            cmdLine = cmdLine + " --metadataFolder " + node.metadataFolder.value
+            cmdLine += f" --metadataFolder {node.metadataFolder.value}"
         if node.pose_opt.value:
-            cmdLine = cmdLine + " --poseOpt"
+            cmdLine += " --poseOpt"
         if node.resumeCheckpoint.value:
-            cmdLine = cmdLine + " --resumeCkpt " + node.resumeCheckpoint.value
+            cmdLine += f" --resumeCkpt {node.resumeCheckpoint.value}"
         if node.optimizedPoses.value:
-            cmdLine = cmdLine + " --optimizedPoses " + node.optimizedPoses.value
+            cmdLine += f" --optimizedPoses {node.optimizedPoses.value}"
         saveSteps = "{}".format(
             str(node.n_steps.value) if not node.custom_ckpts.value else " ".join([str(e.value) for e in node.save_steps.value])
         )
         cmdLine = cmdLine + f" --saveSteps \"{saveSteps}\""
-        return cmdLine
+        # Update nodeDesc.commandLine
+        chunk.node.nodeDesc.commandLine = cmdLine
+        return super().buildCommandLine(chunk)
 
     inputs = [
-        desc.File(
-            name="rezEnvName",
-            label="Rez package name",
-            description="Name (with path if necessary) of the rez package into which the computation should be executed.",
-            value="gsplat-develop",
-            invalidate=False,
-            group="",
-            advanced=True,
-            exposed=False,
-        ),
         desc.File(
             name="sfm",
             label="sfmData",
