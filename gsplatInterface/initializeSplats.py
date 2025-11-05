@@ -27,7 +27,6 @@ class Config:
     # Path to the dataset, masks and metadata folders
     sfm_file: str = "sfm.json"
     result_dir: str = ""
-    masks_folder: str = ""
     metadata_folder: str = ""
     # Use Segmentation masks
     use_masks: bool = False
@@ -171,7 +170,6 @@ class Runner:
             sfmFile=cfg.sfm_file,
             factor=cfg.data_factor,
             normalize=False,
-            masksFolder=cfg.masks_folder,
             metadataFolder=cfg.metadata_folder,
         )
         self.dataset = Dataset(

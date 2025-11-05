@@ -57,9 +57,10 @@ class Config:
 
     # Path to the dataset, masks and metadata folders
     sfm_file: str = "sfm.json"
-    masks_folder: str = ""
+    image_alpha: bool = False
     metadata_folder: str = ""
     # Downsample factor for the dataset
+    scaleFactor: float = 0.25  # Not used
     data_factor: int = 4
     # Directory to save results
     result_dir: str = "results/garden"
@@ -347,8 +348,8 @@ class Runner:
             factor=cfg.data_factor,
             # normalize=cfg.normalize_world_space,
             normalize=False,
-            masksFolder=cfg.masks_folder,
             metadataFolder=cfg.metadata_folder,
+            image_alpha=cfg.image_alpha,
         )
         self.trainset = Dataset(
             self.parser,
