@@ -1,34 +1,41 @@
 __version__ = "1.0"
 
 from meshroom.core import desc
-import os.path
 
-currentDir = os.path.dirname(os.path.abspath(__file__))
 
 class GaussianSplattingOptim(desc.CommandLineNode):
     
-    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingOptim default --data_factor {dataFactorValue} --test_every 0 --max_steps {n_stepsValue} --data_dir {sfmValue} --result_dir {cache}/{nodeType}/{uid} --disable_viewer --eval_steps --resume_ckpt \"{resumeCheckpointValue}\"'
+    commandLine = 'rez env {rezEnvNameValue} -- gaussianSplattingOptim --sfm {sfmValue} --resultDirectory {nodeCacheFolder} --data_factor {dataFactorValue} --maxSteps {n_stepsValue} --evalSteps'
+
     gpu = desc.Level.INTENSIVE
     cpu = desc.Level.NORMAL
     ram = desc.Level.INTENSIVE
 
-    # size = desc.DynamicNodeSize('sfm')
-    # parallelization = desc.Parallelization(blockSize=40)
-    # commandLineRange = '--rangeStart {rangeStart} --rangeSize {rangeBlockSize}'
-
     category = 'Gsplat'
     documentation = '''
-    This node creates and optimizes a gaussian splatting model based on sfm data and images.
+This node creates and optimizes a gaussian splatting model based on sfm data and images.
 '''
 
     def buildCommandLine(self, chunk):
         cmdLine = super(GaussianSplattingOptim, self).buildCommandLine(chunk) # ou juste super().buildCommandLine(chunk)
         node = chunk.node
-        if node.use_masks.value:
-            cmdLine = cmdLine + " --use_masks"
+        if node.mesh.value:
+            cmdLine = cmdLine + " --mesh " + node.mesh.value
+        if node.masksFolder.value:
+            cmdLine = cmdLine + " --masksFolder " + node.masksFolder.value
+        if node.metadataFolder.value:
+            cmdLine = cmdLine + " --metadataFolder " + node.metadataFolder.value
         if node.pose_opt.value:
-            cmdLine = cmdLine + " --pose_opt"
-        return cmdLine + " --save_steps " + (str(node.n_steps.value) if not node.custom_ckpts.value else " ".join([str(e.value) for e in node.save_steps.value]))
+            cmdLine = cmdLine + " --poseOpt"
+        if node.resumeCheckpoint.value:
+            cmdLine = cmdLine + " --resumeCkpt " + node.resumeCheckpoint.value
+        if node.optimizedPoses.value:
+            cmdLine = cmdLine + " --optimizedPoses " + node.optimizedPoses.value
+        saveSteps = "{}".format(
+            str(node.n_steps.value) if not node.custom_ckpts.value else " ".join([str(e.value) for e in node.save_steps.value])
+        )
+        cmdLine = cmdLine + f" --saveSteps \"{saveSteps}\""
+        return cmdLine
 
     inputs = [
         desc.File(
@@ -43,8 +50,36 @@ class GaussianSplattingOptim(desc.CommandLineNode):
         ),
         desc.File(
             name="sfm",
-            label="SfmDataFolder",
-            description="SfMData with the views, poses and intrinsics to use (in JSON format). Downscaled versions of the views should also be provided.",
+            label="sfmData",
+            description="SfMData with the views, poses and intrinsics to use.",
+            value="",
+            group="",
+        ),
+        desc.File(
+            name="mesh",
+            label="mesh",
+            description="",
+            value="",
+            group="",
+        ),
+        desc.IntParam(
+            name="dataFactor",
+            label="Scale factor",
+            description="",
+            value=1,
+            group="",
+        ),
+        desc.File(
+            name="masksFolder",
+            label="masksFolder",
+            description="Masks folder.",
+            value="",
+            group="",
+        ),
+        desc.File(
+            name="metadataFolder",
+            label="metadataFolder",
+            description="Folder that can contain metadata files for gsplat.",
             value="",
             group="",
         ),
@@ -62,14 +97,6 @@ class GaussianSplattingOptim(desc.CommandLineNode):
             description="The number of steps performed by the optimization. (1 step per image)\n"
                         "For 50 images: 3000 for quick debug, 30000 for good quality.",
             value=30000,
-            group="",
-        ),
-        desc.IntParam(
-            name="dataFactor",
-            label="Data Factor",
-            description="The downscale factor. 1 is full resolution, 2 is half-resolution (divide by 4 the number of pixels).\n"
-                        "Valid values depend on the PrepareFolderForGS.",
-            value=4,
             group="",
         ),
         desc.BoolParam(
@@ -94,25 +121,13 @@ class GaussianSplattingOptim(desc.CommandLineNode):
             # TODO add enabled = 
         ),
         desc.BoolParam(
-            name="use_masks",
-            label="Use Masks",
-            description="Whether segmentation masks will be used to remove certain parts of the image from the optimization, if available.",
-            value=True,
-            group="",
-        ),
-        desc.BoolParam(
             name="pose_opt",
             label="Optim Poses",
             description="Whether to optimise the poses or not.",
             value=False,
             group="",
-        ),
- 
-        
+        )
     ]
-
-    # def onCustom_ckptsChanged(self, node):
-    #     node.save_steps_hidden.value = node.custom_ckpts.value
 
     outputs = [
         desc.File(
@@ -128,10 +143,11 @@ class GaussianSplattingOptim(desc.CommandLineNode):
             value = lambda attr: "{nodeCacheFolder}" + f"/ckpts/ckpt_{attr.node.n_steps.value-1}_rank0.pt",
             group="",
         ),
-        # desc.File(
-        #     name="save_steps_hidden",
-        #     label="Hidden",
-        #     description="truc",
-        #     value=lambda node: str(node.n_steps.value) if not node.custom_ckpts.value else " ".join([e.value for e in node.save_steps.value])
-        # ),
+        desc.File(
+            name="optimizedPoses",
+            label="Poses",
+            description="Optimized poses",
+            value = lambda attr: "{nodeCacheFolder}" + f"/ckpts/poses{attr.node.n_steps.value-1}.sfm",
+            group="",
+        ),
     ]

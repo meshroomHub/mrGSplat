@@ -1,0 +1,4 @@
+MeshroomCache
+*.pyc
+__pycache__
+.vscode
