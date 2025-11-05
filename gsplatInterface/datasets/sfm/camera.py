@@ -37,16 +37,17 @@ class SfmIntrinsic:
         hfov = intrinsic.getHorizontalFov()
         sensorWidth = intrinsic.sensorWidth()
         fx = (sensorWidth)/(2.0*math.tan(hfov/2.0))
-        # vfov = intrinsic.getVerticalFov()
-        # sensorHeight = intrinsic.sensorHeight()
-        # fy = (sensorHeight)/(2.0*math.tan(vfov/2.0))
-        # TODO : "sensorWidth", "sensorHeight", "principalPoint"
-        raise NotImplementedError("Missing keys : sensorWidth, sensorHeight, principalPoint")
+        vfov = intrinsic.getVerticalFov()
+        sensorHeight = intrinsic.sensorHeight()
+        fy = (sensorHeight)/(2.0*math.tan(vfov/2.0))
         intrinsicDict = {
             "type": intrinsic.getTypeStr(),
             "focalLength": fx,
             "width": intrinsic.w(),
-            "height": intrinsic.h()
+            "height": intrinsic.h(),
+            "sensorWidth": sensorWidth, 
+            "sensorHeight": sensorHeight, 
+            "principalPoint": intrinsic.getPrincipalPoint()
         }
         return cls(intrinsicId, intrinsicDict)
 

@@ -30,7 +30,6 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             cmdLine += f" --pose_opt"
         if node.image_alpha.value:
             cmdLine += f" --image_alpha"
-        print("\n" + cmdLine + "\n")
         # Update nodeDesc.commandLine
         node.nodeDesc.commandLine = cmdLine
         return super().buildCommandLine(chunk)
