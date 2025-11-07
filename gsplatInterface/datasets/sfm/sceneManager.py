@@ -187,7 +187,7 @@ class Parser:
         # 3D points and {image_name -> [point_idx]}
         points = np.array([p.position for p in manager.landmarks])
         points_rgb = np.array([p.color for p in manager.landmarks])
-        raise ValueError()
+        
         point_indices = {}
         for point_id, viewIds in manager.landmarkId_to_viewId.items():
             for viewId in viewIds:

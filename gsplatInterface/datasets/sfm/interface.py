@@ -14,7 +14,7 @@ from numpy.linalg import inv as invert
 import json
 
 
-FORCE_JSON_TYPE = True
+FORCE_JSON_TYPE = False
 
 
 class SfmPose:
@@ -92,9 +92,8 @@ class SfmLandmark:
         assert isinstance(landmark, sfmData.Landmark)
         # Get view infos
         position = np.array(landmark.X.reshape(3), dtype=np.float32)
-        raise ValueError(f"Swig bindings missing for landmark.rgb : {landmark.rgb}")
-        color = np.array(landmark.rgb, dtype=np.int16)
-        raise ValueError(f"<{position.shape}, {color.shape}>")
+        color = np.array(landmark.rgb.reshape(3), dtype=np.int16)
+
         observations = {}
         # TODO : this part doesn't work, missing bindings to Observation 
         #        (getObservations return Swig object so we don't have access to coodinates)
@@ -107,7 +106,6 @@ class SfmLandmark:
         landmarkId = int(landmarkDict.pop("landmarkId"))
         position = np.array(landmarkDict["X"], dtype=np.float32)
         color = np.array(landmarkDict["color"], dtype=np.int16)
-        raise ValueError(f"<{position.shape}, {color.shape}>")
         observations = {}
         for obs in landmarkDict["observations"]:
             obsId = int(obs["observationId"])
