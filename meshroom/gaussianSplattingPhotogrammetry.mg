@@ -29,6 +29,16 @@
             ],
             "inputs": {}
         },
+        "ConvertGSplatModel_1": {
+            "nodeType": "ConvertGSplatModel",
+            "position": [
+                3072,
+                198
+            ],
+            "inputs": {
+                "input": "{GaussianSplattingOptim_3.model}"
+            }
+        },
         "ExportImages_1": {
             "nodeType": "ExportImages",
             "position": [
@@ -38,6 +48,30 @@
             "inputs": {
                 "input": "{IntrinsicsTransforming_1.input}",
                 "target": "{IntrinsicsTransforming_1.output}",
+                "maskExtension": "exr"
+            }
+        },
+        "ExportImages_2": {
+            "nodeType": "ExportImages",
+            "position": [
+                2208.5,
+                154.0
+            ],
+            "inputs": {
+                "input": "{IntrinsicsTransforming_2.input}",
+                "target": "{IntrinsicsTransforming_2.output}",
+                "maskExtension": "exr"
+            }
+        },
+        "ExportImages_3": {
+            "nodeType": "ExportImages",
+            "position": [
+                2208.5,
+                318.0
+            ],
+            "inputs": {
+                "input": "{IntrinsicsTransforming_3.input}",
+                "target": "{IntrinsicsTransforming_3.output}",
                 "maskExtension": "exr"
             }
         },
@@ -73,18 +107,44 @@
             "inputs": {
                 "sfm_file": "{ExportImages_1.outputSfMData}",
                 "image_alpha": true,
-                "max_steps": 10000
+                "max_steps": 5000
+            }
+        },
+        "GaussianSplattingOptim_2": {
+            "nodeType": "GaussianSplattingOptim",
+            "position": [
+                2603,
+                150.0
+            ],
+            "inputs": {
+                "sfm_file": "{ExportImages_2.outputSfMData}",
+                "image_alpha": true,
+                "resume_ckpt": "{GaussianSplattingOptim_1.model}",
+                "max_steps": 5000
+            }
+        },
+        "GaussianSplattingOptim_3": {
+            "nodeType": "GaussianSplattingOptim",
+            "position": [
+                2822,
+                303.0
+            ],
+            "inputs": {
+                "sfm_file": "{ExportImages_3.outputSfMData}",
+                "image_alpha": true,
+                "resume_ckpt": "{GaussianSplattingOptim_2.model}",
+                "max_steps": 5000
             }
         },
         "GaussianSplattingRender_1": {
             "nodeType": "GaussianSplattingRender",
             "position": [
-                2602,
-                -14
+                3072,
+                299
             ],
             "inputs": {
-                "cameras": "{GaussianSplattingOptim_1.sfm_file}",
-                "model": "{GaussianSplattingOptim_1.model}"
+                "cameras": "{GaussianSplattingOptim_3.sfm_file}",
+                "model": "{GaussianSplattingOptim_3.model}"
             }
         },
         "ImageMatching_1": {
@@ -105,6 +165,28 @@
             "position": [
                 2007.5,
                 -10.0
+            ],
+            "inputs": {
+                "input": "{SfMColorizing_2.output}",
+                "scaleFactor": 0.25
+            }
+        },
+        "IntrinsicsTransforming_2": {
+            "nodeType": "IntrinsicsTransforming",
+            "position": [
+                2007.5,
+                154.0
+            ],
+            "inputs": {
+                "input": "{SfMColorizing_2.output}",
+                "scaleFactor": 0.5
+            }
+        },
+        "IntrinsicsTransforming_3": {
+            "nodeType": "IntrinsicsTransforming",
+            "position": [
+                2007.5,
+                318.0
             ],
             "inputs": {
                 "input": "{SfMColorizing_2.output}"

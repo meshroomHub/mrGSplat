@@ -4,9 +4,7 @@ from pathlib import Path
 
 from meshroom.core import desc
 
-exe_path = os.path.join(os.path.dirname(__file__), 'scripts', 'convertGSplatModel.py')
-rez_env = ["python-3.11", "pytorch", "numpy", "plyfile"]
-
+exe_path = os.path.join(os.path.dirname(__file__), '../../scripts', 'convertGSplatModel.py')
 
 DOC = """# ConvertGSplatModel
 
@@ -20,7 +18,7 @@ class ConvertGSplatModel(desc.CommandLineNode):
     category = 'Gsplat'
     documentation = DOC
 
-    commandLine = 'rez env {rezEnvNameValue} -- python '+exe_path+' {inputValue} {formatValue} {outputValue}'
+    commandLine = 'python '+exe_path+' {inputValue} {formatValue} {outputValue}'
 
     inputs = [
         desc.File(
@@ -37,17 +35,7 @@ class ConvertGSplatModel(desc.CommandLineNode):
             value='.ply',
             values=['.ply'],
             exclusive=True,
-        ),
-        
-        desc.File(
-            name="rezEnvName",
-            label="Rez package name",
-            description="Name (with path if necessary) of the rez package into which the computation should be executed.",
-            value=" ".join(rez_env),
-            invalidate=False,
-            advanced=True,
-            exposed=False,
-        ),
+        )
     ]
     
     outputs = [
