@@ -72,17 +72,16 @@ This node computes the rasterization of a given gaussian splatting model from gi
             name="frames",
             label="Frames",
             description="Frames rendered using gaussian splatting.",
-            semantic="sequence", #"image", # use "image" when <FILESTEM> logic, and "sequence" when *.jpg logic
-            # semantic="sequence",
-            value=os.path.join("{nodeCacheFolder}",'renders', '*.jpg'), #/renders/<VIEW_ID>_<FILESTEM>.JPG',
+            semantic="image", # use "image" for <VIEW_ID> logic
+            # semantic="sequence", # use "sequence" for *.jpg logic
+            value="{nodeCacheFolder}/renders/<VIEW_ID>.exr",  # _<FILESTEM>
             group="",
         ),
         desc.File(
             name="render_folder",
             label="Render Folder",
             description="Output folder.",
-            value=os.path.join("{nodeCacheFolder}", 'renders'),
-            semantic="sequence",
+            value="{nodeCacheFolder}/renders",
             group="",
         ),
     ]

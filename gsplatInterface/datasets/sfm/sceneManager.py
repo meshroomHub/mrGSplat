@@ -187,7 +187,7 @@ class Parser:
         # 3D points and {image_name -> [point_idx]}
         points = np.array([p.position for p in manager.landmarks])
         points_rgb = np.array([p.color for p in manager.landmarks])
-        raise ValueError()
+        
         point_indices = {}
         for point_id, viewIds in manager.landmarkId_to_viewId.items():
             for viewId in viewIds:
@@ -403,9 +403,8 @@ class Dataset:
         return len(self.indices)
     
     def get_image(self, index) -> AvImage:
-        if index not in self.images.keys():
-            self.images[index] = AvImage(self.parser.image_paths[index], alpha=self.parser.image_alpha, open=True)
-        return self.images[index]
+        
+        return AvImage(self.parser.image_paths[index], alpha=self.parser.image_alpha, open=True)
     
     # def get_mask(self, index):
     #     if index not in self.masks.keys():
