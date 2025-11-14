@@ -145,7 +145,8 @@ class Config:
     app_opt_reg: float = 1e-6
 
     # Enable bilateral grid. (experimental)
-    use_bilateral_grid: bool = True
+    use_bilateral_grid: bool = False
+    
     # Whether use fused-bilateral grid
     use_fused_bilagrid: bool = False
     # Shape of the bilateral grid (X, Y, W)
@@ -156,8 +157,6 @@ class Config:
     # Weight for depth loss
     depth_lambda: float = 1e-2
 
-
-    lpips_net: Literal["vgg", "alex"] = "alex"
 
     # 3DGUT (uncented transform + eval 3D)
     with_ut: bool = False
@@ -286,7 +285,6 @@ class Runner:
             load_depths=cfg.depth_loss,
         )
 
-        self.valset = Dataset(self.parser)
         self.scene_scale = self.parser.scene_scale * 1.1 * cfg.global_scale
 
         print("Scene scale:", self.scene_scale)
@@ -386,18 +384,6 @@ class Runner:
         # Losses & Metrics.
         self.ssim = StructuralSimilarityIndexMeasure(data_range=1.0).to(self.device)
         self.psnr = PeakSignalNoiseRatio(data_range=1.0).to(self.device)
-
-        if cfg.lpips_net == "alex":
-            self.lpips = LearnedPerceptualImagePatchSimilarity(
-                net_type="alex", normalize=True
-            ).to(self.device)
-        elif cfg.lpips_net == "vgg":
-            # The 3DGS official repo uses lpips vgg, which is equivalent with the following:
-            self.lpips = LearnedPerceptualImagePatchSimilarity(
-                net_type="vgg", normalize=False
-            ).to(self.device)
-        else:
-            raise ValueError(f"Unknown LPIPS network: {cfg.lpips_net}")
 
     def rasterize_splats(
         self,

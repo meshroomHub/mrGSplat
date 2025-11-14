@@ -397,62 +397,8 @@ class Dataset:
         return len(self.indices)
     
     def get_image(self, index) -> AvImage:
-        
         return AvImage(self.parser.image_paths[index], alpha=self.parser.image_alpha, open=True)
     
-    # def get_mask(self, index):
-    #     if index not in self.masks.keys():
-    #         mask = AvImage(self.mask_paths[index], greyscale=True, open=True).pixels
-    #         if len(mask.shape) == 2:
-    #             self.masks[index] = mask
-    #         elif len(mask.shape) == 3:
-    #             self.masks[index] = mask[...,0]
-    #             print(f"[Caution] Mask (index={index}) is not in greyscale : shape={mask.shape}")
-    #         else:
-    #             raise ValueError("Mask (index={index}) has shape {mask.shape} which is not handled")
-    #     return self.masks[index]
-    
-    # def get_landmark_coordinates(self, item: int) -> Dict[int, Tuple[int, int, int]]:
-    #     """ For each item (image index) get the coordinates of each landmark
-    #     :return: { landmarkId: (x, y, depth), ... }
-    #     """
-    #     # Get camera matrix, intrinsics, image name and size
-    #     index = self.indices[item]
-    #     image_name = self.parser.image_names[index]
-    #     camera_id = self.parser.camera_ids[index]
-    #     W, H = self.parser.imsize_dict[camera_id]
-    #     K = self.parser.Ks_dict[camera_id].copy()
-    #     camtoworld = self.parser.camtoworlds[index]
-    #     # Projected points to image plane
-    #     worldtocam = np.linalg.inv(camtoworld)
-    #     point_indices = self.parser.point_indices[image_name]
-    #     points_world = self.parser.points[point_indices]
-    #     points_cam = (worldtocam[:3, :3] @ points_world.T + worldtocam[:3, 3:4]).T
-    #     points_proj = (K @ points_cam.T).T
-    #     points = points_proj[:, :2] / points_proj[:, 2:3]  # (M, 2)
-    #     depths = points_cam[:, 2]  # (M,)
-    #     # filter out points outside the image
-    #     mask = np.ones((len(point_indices)))
-    #     if self.parser.masks_exist:
-    #         maskImg = self.get_mask(index)
-    #         mask[:] = maskImg[points[:]] < 0.01
-    #     selector = (
-    #           (points[:, 0] >= 0)
-    #         & (points[:, 0] < W)
-    #         & (points[:, 1] >= 0)
-    #         & (points[:, 1] < H)
-    #         & (depths > 0)
-    #         & (mask[:] > 0)
-    #     )
-    #     point_indices = point_indices[selector]
-    #     # Get final result
-    #     landmarksCoords = {}
-    #     for landmarkId in point_indices:
-    #         x, y  = points[landmarkId]
-    #         depth = depths[landmarkId]
-    #         landmarksCoords[landmarkId] = (x, y, depth)
-    #     return landmarksCoords
-
     def __getitem__(self, item: int) -> Dict[str, Any]:
         index = self.indices[item]
         # Load from disk:
@@ -477,6 +423,8 @@ class Dataset:
             x = np.random.randint(0, max(w - self.patch_size, 1))
             y = np.random.randint(0, max(h - self.patch_size, 1))
             pixels = pixels[y : y + self.patch_size, x : x + self.patch_size]
+            if mask is not None:
+                mask = mask[y : y + self.patch_size, x : x + self.patch_size]
             K[0, 2] -= x
             K[1, 2] -= y
 
