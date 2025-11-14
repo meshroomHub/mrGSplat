@@ -73,7 +73,6 @@ This node computes the rasterization of a given gaussian splatting model from gi
             label="Frames",
             description="Frames rendered using gaussian splatting.",
             semantic="image", # use "image" for <VIEW_ID> logic
-            # semantic="sequence", # use "sequence" for *.jpg logic
             value="{nodeCacheFolder}/renders/<VIEW_ID>.exr",  # _<FILESTEM>
             group="",
         ),

@@ -107,7 +107,7 @@
             "inputs": {
                 "sfm_file": "{ExportImages_1.outputSfMData}",
                 "image_alpha": true,
-                "max_steps": 5000
+                "max_epochs": 100
             }
         },
         "GaussianSplattingOptim_2": {
@@ -120,7 +120,7 @@
                 "sfm_file": "{ExportImages_2.outputSfMData}",
                 "image_alpha": true,
                 "resume_ckpt": "{GaussianSplattingOptim_1.model}",
-                "max_steps": 5000
+                "max_epochs": 100
             }
         },
         "GaussianSplattingOptim_3": {
@@ -133,7 +133,7 @@
                 "sfm_file": "{ExportImages_3.outputSfMData}",
                 "image_alpha": true,
                 "resume_ckpt": "{GaussianSplattingOptim_2.model}",
-                "max_steps": 5000
+                "max_epochs": 100
             }
         },
         "GaussianSplattingRender_1": {

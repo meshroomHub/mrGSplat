@@ -20,12 +20,11 @@ from datasets.sfm.sceneManager import PoseParser
 # from cameraPosesParser import CameraParser
 
 
-def get_cameras_from_sfm(sfmFile, data_factor):
+def get_cameras_from_sfm(sfmFile):
     cameras = []
     
     psr = PoseParser(
         sfmFile=sfmFile,
-        factor=int(data_factor),
         normalize=True
     )
     
@@ -154,7 +153,7 @@ def main(local_rank: int, world_rank, world_size: int, args):
             )
         return renders
     
-    cameras = get_cameras_from_sfm(args.cameras, args.data_factor)
+    cameras = get_cameras_from_sfm(args.cameras)
     render_tab_state = GSplatRenderTabState()
     
     total_render_time = 0.
@@ -195,9 +194,6 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-c", "--cameras", type=str, help="SFM file containing cameras (poses)"
-    )
-    parser.add_argument(
-        "-df", "--data_factor", type=int, default=1, help="Data factor"
     )
     parser.add_argument(
         "--output_dir", type=str, default="results/", help="where to dump outputs"

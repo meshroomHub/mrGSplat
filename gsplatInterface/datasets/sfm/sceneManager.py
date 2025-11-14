@@ -116,14 +116,12 @@ class SfmSceneManager:
 class Parser:
     def __init__(self,
                  sfmFile: str,
-                 factor: Optional[int] = 1.0, 
                  normalize: Optional[bool] = False,
                  masksFolder: Optional[str] = None,
                  mesh: Optional[str] = None,
                  metadataFolder: Optional[str] = None,
                  image_alpha: bool = False):
         self.sfmFile = sfmFile
-        self.factor = factor
         # TODO : not convienient to use different poses when we have normalization that depend on dataset
         self.normalize = False  # normalize  
         self.image_alpha = image_alpha
@@ -149,11 +147,10 @@ class Parser:
             w2c_mats.append(w2c)
             # Intrinsic
             camera_id = view.intrinsicId
-            imsize_dict[camera_id] = (int(view.W // factor), int(view.H // factor))
+            imsize_dict[camera_id] = (int(view.W), int(view.H))
             camera_ids.append(camera_id)
             intrinsic = manager.intrinsics_dict[camera_id]
             K = intrinsic.get_K()
-            K[:2, :] /= factor
             Ks_dict[camera_id] = K
         
         print(f"[Parser] {len(manager.views)-len(missing_poses)}/{len(manager.views)} views, taken by {len(set(camera_ids))} cameras.")
@@ -285,12 +282,10 @@ class Parser:
 class PoseParser(Parser):
     def __init__(self,
                  sfmFile: str,
-                 factor: int = 1.0, 
                  normalize: bool = False,
                  masksFolder: str = None,
                  metadataFolder: str = None):
         self.sfmFile = sfmFile
-        self.factor = factor
         # TODO : not convienient to use different poses when we have normalization that depend on dataset
         self.normalize = False  # normalize  
         
@@ -318,9 +313,8 @@ class PoseParser(Parser):
             camera_ids.append(view.intrinsicId)
         
         for camera_id, intrinsic in manager.intrinsics_dict.items():
-            imsize_dict[camera_id] = (int(intrinsic.W // factor), int(intrinsic.H // factor))
+            imsize_dict[camera_id] = (int(intrinsic.W), int(intrinsic.H))
             K = intrinsic.get_K()
-            K[:2, :] /= factor
             intrinsicsDict[camera_id] = K
         
         print(f"[BaseParser] {len(w2c_mats)} poses, taken by {len(set(camera_ids))} cameras.")

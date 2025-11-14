@@ -17,21 +17,23 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
 '''
 
     def buildCommandLine(self, chunk):
+
         node = chunk.node
+
         # Always 1 because the scale is updated in the intrinsics by the exportImages 
-        cmdLine = self.commandLine + f" --data_factor 1"
-        saveSteps = str(node.max_steps.value)
+        cmdLine = self.commandLine
+        saveEpochs = str(node.max_epochs.value)
         if node.custom_ckpts.value:
-            saveSteps = " ".join([str(e.value) for e in node.save_steps.value])
-        cmdLine += f" --save_steps {saveSteps}"
-        # cmdLine += f" --eval_steps {node.max_steps.value}"
-        cmdLine += f" --eval_steps"
-        if node.pose_opt.value:
-            cmdLine += f" --pose_opt"
+            saveEpochs = " ".join([str(e.value) for e in node.save_epochs.value])
+
+        cmdLine += f" --save_epochs {saveEpochs}"
+                
         if node.image_alpha.value:
             cmdLine += f" --image_alpha"
+        
         # Update nodeDesc.commandLine
         node.nodeDesc.commandLine = cmdLine
+        
         return super().buildCommandLine(chunk)
 
     inputs = [
@@ -49,34 +51,20 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             value=False,
             group=""
         ),
-        # Masks are in alpha -> use exportImages
-        # desc.File(
-        #     name="masksFolder",
-        #     label="masksFolder",
-        #     description="Masks folder.",
-        #     value="",
-        #     group="allParams"
-        # ),
-        # Disabled metadata for now
-        # desc.File(
-        #     name="metadataFolder",
-        #     label="metadataFolder",
-        #     description="Folder that can contain metadata files for gsplat.",
-        #     value="",
-        # ),
+        
         desc.File(
             name="resume_ckpt",
             label="resumeFromModel",
-            description="resumeFromModel",
+            description="Resume from Model",
             value="",
             group="allParams"
         ),
         desc.IntParam(
-            name="max_steps",
-            label="Number of Steps",
-            description="The number of steps performed by the optimization. (1 step per image)\n"
-                        "For 50 images: 3000 for quick debug, 30000 for good quality.",
-            value=30000,
+            name="max_epochs",
+            label="Number of Epochs",
+            description="The number of epochs performed by the optimization.\n"
+                        "60 for quick debug, 600 for good quality.",
+            value=600,
             group="allParams"
         ),
         desc.BoolParam(
@@ -88,21 +76,14 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
         ),
         desc.ListAttribute(
             desc.IntParam(
-                name="save_steps",
-                label="Saving step",
-                description="Step at which the model will be saved as checkpoint.",
-                value=30000,
+                name="save_epoch",
+                label="Saving epoch",
+                description="Epoch at which the model will be saved as checkpoint.",
+                value=600,
             ),
-            name="save_steps",
-            label="Saving steps",
-            description="All the steps at which the model will be saved as a check point.",
-            group=""
-        ),
-        desc.BoolParam(
-            name="pose_opt",
-            label="Optim Poses",
-            description="Whether to optimise the poses or not.",
-            value=False,
+            name="save_epochs",
+            label="Saving epochs",
+            description="All the epochs at which the model will be saved as a check point.",
             group=""
         )
     ]
@@ -119,14 +100,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             name="model",
             label="Model",
             description="Optimized gaussian splatting model",
-            value = lambda attr: "{nodeCacheFolder}" + f"/ckpts/ckpt_{attr.node.max_steps.value-1}_rank0.pt",
+            value = lambda attr: "{nodeCacheFolder}" + f"/ckpts/ckpt_{attr.node.max_epochs.value-1}_rank0.pt",
             group=""
-        ),
-        desc.File(
-            name="optimizedPoses",
-            label="Poses",
-            description="Optimized poses",
-            value = lambda attr: "{nodeCacheFolder}" + f"/ckpts/poses{attr.node.max_steps.value-1}.sfm",
-            group=""
-        ),
+        )
     ]
