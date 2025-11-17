@@ -401,20 +401,16 @@ class Dataset:
     
     def __getitem__(self, item: int) -> Dict[str, Any]:
         index = self.indices[item]
-        # Load from disk:
-        # image = imageio.imread(self.parser.image_paths[index])[..., :3]
-        # All in memory:
+        
         image = self.get_image(index)
         pixels = image.pixels
         camera_id = self.parser.camera_ids[index]
-        K = self.parser.Ks_dict[camera_id].copy()  # undistorted K
+        K = self.parser.Ks_dict[camera_id].copy() 
         camtoworlds = self.parser.camtoworlds[index]
-        # Load from disk:
-        # mask = imageio.imread(mask_path)[..., :3]
-        # mask = self.get_mask(index) if self.parser.masks_exist else None
-        mask = None
+        
         if image.hasAlpha:
             mask = image.get_alpha_mask()
+        
         image_name = self.parser.image_names[index]
 
         if self.patch_size is not None:

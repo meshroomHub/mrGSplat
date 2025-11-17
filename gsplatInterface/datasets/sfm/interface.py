@@ -64,17 +64,11 @@ class SfmPose:
 
 
 class SfmObservation:
-    """
-    Dummy class for the observation position (position in the image)
-    I'm not using it in GSplat but we never know so I'm still creating a class
-    to make sure if we need more infos we can add them here easily
-    """
-    def __init__(self, landmarkId, **observationDict):
-        self.landmarkId = landmarkId
-        self.observationId = int(observationDict["observationId"])
+    def __init__(self):
+        pass
     
     def __repr__(self):
-        return f"<Observation of view={self.observationId} on landmark={self.landmarkId}>"
+        return ""
 
 
 class SfmLandmark:
@@ -95,10 +89,9 @@ class SfmLandmark:
         color = np.array(landmark.rgb.reshape(3), dtype=np.int16)
 
         observations = {}
-        # TODO : this part doesn't work, missing bindings to Observation 
-        #        (getObservations return Swig object so we don't have access to coodinates)
-        # for obs in landmark.getObservations().itervalues():
-        #     print(obs.getCoordinates())
+        for view_id, _ in landmark.getMapObservations().items():
+            observations[view_id] = SfmObservation()
+
         return cls(landmarkId, position, color, observations)
     
     @classmethod
@@ -109,50 +102,11 @@ class SfmLandmark:
         observations = {}
         for obs in landmarkDict["observations"]:
             obsId = int(obs["observationId"])
-            observations[obsId] = SfmObservation(landmarkId, **obs)
+            observations[obsId] = SfmObservation()
         return cls(landmarkId, position, color, observations)
     
     def __repr__(self):
         return f"<Landmark {self.landmarkId}>"
-
-
-class SfmJsonFile:
-    def __init__(self, path: Path):
-        print(f"Read SfmJsonFile {path}")
-        self.__path = path
-        self.__content = {}
-        with open(path, "r") as fo:
-            self.__content = json.load(fo)
-    
-    def __repr__(self):
-        return f"<SfmJsonFile {self.__path}>"
-    
-    def getIntrinsics(self):
-        intrinsics = []
-        for intrinsicDict in self.__content.get("intrinsics", []):
-            intrinsicId = intrinsicDict.pop("intrinsicId")
-            intrinsics.append(SfmIntrinsic(intrinsicId, intrinsicDict))
-        return intrinsics
-    
-    def getViews(self):
-        views = []
-        for viewDict in self.__content.get("views", []):
-            viewId = viewDict.pop("viewId")
-            views.append(SfmView(viewId, viewDict))
-        return views
-    
-    def getPoses(self):
-        poses = {}
-        for poseDict in self.__content.get("poses", []):
-            poseId = int(poseDict.pop("poseId"))
-            poses[poseId] = SfmPose(poseId, poseDict)
-        return poses
-    
-    def getLandmarks(self):
-        landmarks = []
-        for landmark in self.__content.get("structure", []):
-            landmarks.append(SfmLandmark.from_dict(landmark))
-        return landmarks
 
 
 class SfmFile:
@@ -174,8 +128,6 @@ class SfmFile:
     
     def getViews(self):
         views = []
-        # TODO : use getValidViews ?
-        # self._views = self.__content.getValidViews()
         for item in self.__content.getViews().iteritems():
             views.append(SfmView.from_pyalicevision(item))
         return views
@@ -195,34 +147,14 @@ class SfmFile:
 
 class SfmReader:
     def __init__(self, inputSfmPath: Path):
-        self.__originalSfmFile = inputSfmPath  # In case we convert it to JSON
         self.sfmFile = inputSfmPath
         self.dataAV = None
         self.viewFiles = None
         self.load()
-    
-    @staticmethod
-    def convert_to_json(filepath: Path):
-        print(f"Convert SFM {filepath} to JSON")
-        # TODO : temp file
-        ouput_json = os.path.join(filepath.parent, "save_sfm.json")
-        dataAV = sfmData.SfMData()
-        if sfmDataIO.load(dataAV, str(filepath), sfmDataIO.ALL):
-            if sfmDataIO.save(dataAV, ouput_json, sfmDataIO.ALL):
-                return ouput_json
-            else:
-                raise SystemError(f"Could not save SFM file to {ouput_json}")
-        else:
-            raise ValueError(f"Could not read SFM file {filepath}")
+
     
     def load(self):
-        if self.sfmFile.suffix == ".json":
-            self.dataAV = SfmJsonFile(self.sfmFile)
-        elif FORCE_JSON_TYPE:
-            self.sfmFile = self.convert_to_json(self.sfmFile)
-            self.dataAV = SfmJsonFile(self.sfmFile)
-        else:
-            self.dataAV = SfmFile(self.sfmFile)
+        self.dataAV = SfmFile(self.sfmFile)
     
     @property
     def intrinsics(self):

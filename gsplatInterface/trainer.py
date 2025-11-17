@@ -757,6 +757,9 @@ if __name__ == "__main__":
     parser = ArgumentParser(configs, prebuilt=True)
     cfg = parser.parse_args(sys.argv[1:])
 
+    if cfg.sparse_grad:
+        cfg.visible_adam = False
+
     # Import BilateralGrid and related functions based on configuration
     if cfg.use_bilateral_grid or cfg.use_fused_bilagrid:
         if cfg.use_fused_bilagrid:
