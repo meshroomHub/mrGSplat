@@ -161,6 +161,22 @@ class Config:
     # 3DGUT (uncented transform + eval 3D)
     with_ut: bool = False
     with_eval3d: bool = False
+    
+    #Strategy
+    prune_opa: float = 0.005
+    grow_grad2d: float = 0.0002
+    grow_scale3d: float = 0.01
+    grow_scale2d: float = 0.05
+    prune_scale3d: float = 0.1
+    prune_scale2d: float = 0.15
+    refine_scale2d_stop_iter: int = 0
+    refine_start_iter: int = 500
+    refine_stop_iter: int = 15_000
+    reset_every: int = 3000
+    refine_every: int = 100
+    pause_refine_after_reset: int = 0
+    absgrad: bool = False
+    revised_opacity: bool = False
 
     
 
@@ -314,9 +330,24 @@ class Runner:
         print("Model initialized. Number of GS:", len(self.splats["means"]))
 
         # Densification Strategy
+        
         self.cfg.strategy.check_sanity(self.splats, self.optimizers)
 
         if isinstance(self.cfg.strategy, DefaultStrategy):
+            self.cfg.strategy.prune_opa = self.cfg.prune_opa
+            self.cfg.strategy.grow_grad2d = self.cfg.grow_grad2d
+            self.cfg.strategy.grow_scale3d = self.cfg.grow_scale3d
+            self.cfg.strategy.grow_scale2d = self.cfg.grow_scale2d
+            self.cfg.strategy.prune_scale3d = self.cfg.prune_scale3d
+            self.cfg.strategy.prune_scale2d = self.cfg.prune_scale2d
+            self.cfg.strategy.refine_scale2d_stop_iter = self.cfg.refine_scale2d_stop_iter
+            self.cfg.strategy.refine_start_iter = self.cfg.refine_start_iter
+            self.cfg.strategy.refine_stop_iter = self.cfg.refine_stop_iter
+            self.cfg.strategy.reset_every = self.cfg.reset_every
+            self.cfg.strategy.refine_every = self.cfg.refine_every
+            self.cfg.strategy.pause_refine_after_reset = self.cfg.pause_refine_after_reset
+            self.cfg.strategy.absgrad = self.cfg.absgrad
+            self.cfg.strategy.revised_opacity = self.cfg.revised_opacity
             self.strategy_state = self.cfg.strategy.initialize_state(
                 scene_scale=self.scene_scale
             )
@@ -681,6 +712,7 @@ class Runner:
                         info=info,
                         packed=cfg.packed,
                     )
+                    print("Number of GS:", len(self.splats["means"]))
                 elif isinstance(self.cfg.strategy, MCMCStrategy):
                     self.cfg.strategy.step_post_backward(
                         params=self.splats,

@@ -62,6 +62,12 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
         
         if node.use3DGut.value:
             cmdLine += " --with_ut --with_eval3d"
+        
+        if node.absGrad.value:
+            cmdLine += " --absgrad"
+            
+        if node.revisedOpacity.value:
+            cmdLine += " --revised_opacity"
 
         node.nodeDesc.commandLine = cmdLine
 
@@ -205,10 +211,17 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             group="allParams"
         ),
         desc.FloatParam(
-            name="shN_lr",
-            label="Gaussian SH LR",
-            description="Gaussian Spherical harmonics Learning Rate",
-            value=2.5e-3 / 20,
+            name="opacity_reg",
+            label="Opacity regularization",
+            description="Opacity regularization weight",
+            value=0.0,
+            group="allParams"
+        ),
+        desc.FloatParam(
+            name="scale_reg",
+            label="Scale regularization",
+            description="Scale regularization weight",
+            value=0.0,
             group="allParams"
         ),
         desc.BoolParam(
@@ -314,6 +327,118 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             description="Use 3DGut method.",
             value=False,
             group=None
+        ),
+        desc.FloatParam(
+            name="prune_opa",
+            label="prune_opa", 
+            description="GSs with opacity below this value will be pruned.",
+            value=0.005,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.FloatParam(
+            name="grow_grad2d",
+            label="grow_grad2d", 
+            description="GSs with image plane gradient above this value will be split/duplicated.",
+            value=0.0002,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.FloatParam(
+            name="grow_scale3d",
+            label="grow_scale3d", 
+            description="GSs with 3d scale (normalized by scene_scale) below this value will be duplicated. Above will be split.",
+            value=0.01,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.FloatParam(
+            name="grow_scale2d",
+            label="grow_scale2d", 
+            description="GSs with 2d scale (normalized by image resolution) above this value will be split",
+            value=0.05,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.FloatParam(
+            name="prune_scale3d",
+            label="prune_scale3d", 
+            description="GSs with 3d scale (normalized by scene_scale) above this value will be pruned.",
+            value=0.1,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.FloatParam(
+            name="prune_scale2d",
+            label="prune_scale2d", 
+            description="GSs with 2d scale (normalized by image resolution) above this value will be pruned",
+            value=0.15,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.IntParam(
+            name="refine_scale2d_stop_iter",
+            label="refine_scale2d_stop_iter", 
+            description="Stop refining GSs based on 2d scale after this iteration.",
+            value=0,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.IntParam(
+            name="refine_start_iter",
+            label="refine_start_iter", 
+            description="Start refining GSs after this iteration.",
+            value=500,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.IntParam(
+            name="refine_stop_iter",
+            label="refine_stop_iter", 
+            description="Stop refining GSs after this iteration.",
+            value=15000,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.IntParam(
+            name="reset_every",
+            label="reset_every", 
+            description="Reset opacities every this steps.",
+            value=3000,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.IntParam(
+            name="refine_every",
+            label="refine_every", 
+            description=" Refine GSs every this steps.",
+            value=100,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.IntParam(
+            name="pause_refine_after_reset",
+            label="pause_refine_after_reset", 
+            description="Pause refining GSs until this number of steps after reset, Default is 0 (no pause at all) and one might want to set this number to the number of images in training set.",
+            value=0,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.BoolParam(
+            name="absGrad",
+            label="absgrad", 
+            description="Use absolute gradients for GS splitting.",
+            value=False,
+            group=None,
+            enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.BoolParam(
+            name="revisedOpacity",
+            label="revised_opacity", 
+            description="hether to use revised opacity heuristic from arXiv:2404.06109 (experimental).",
+            value=False,
+            group=None,
+            enabled=lambda node: node.strategy.value == "default"
         ),
         desc.BoolParam(
             name="custom_ckpts",
