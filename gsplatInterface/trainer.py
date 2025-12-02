@@ -157,12 +157,14 @@ class Config:
     # Weight for depth loss
     depth_lambda: float = 1e-2
 
+    # tile size 
+    tile_size: int = 16
 
     # 3DGUT (uncented transform + eval 3D)
     with_ut: bool = False
     with_eval3d: bool = False
     
-    #Strategy
+    #Strategy default
     prune_opa: float = 0.005
     grow_grad2d: float = 0.0002
     grow_scale3d: float = 0.01
@@ -178,7 +180,10 @@ class Config:
     absgrad: bool = False
     revised_opacity: bool = False
 
-    
+    #Strategy mcmc
+    cap_max: int = 1_000_000
+    noise_lr: float = 5e5
+    min_opacity: float = 0.005
 
 
 def create_splats_with_optimizers(
@@ -352,6 +357,13 @@ class Runner:
                 scene_scale=self.scene_scale
             )
         elif isinstance(self.cfg.strategy, MCMCStrategy):
+            self.cfg.strategy.cap_max = self.cfg.cap_max
+            self.cfg.strategy.noise_lr = self.cfg.noise_lr
+            self.cfg.strategy.refine_start_iter = self.cfg.refine_start_iter 
+            self.cfg.strategy.refine_stop_iter = self.cfg.refine_stop_iter 
+            self.cfg.strategy.refine_every = self.cfg.refine_every 
+            self.cfg.strategy.min_opacity = self.cfg.min_opacity 
+            self.cfg.strategy.verbose = True 
             self.strategy_state = self.cfg.strategy.initialize_state()
         else:
             assert_never(self.cfg.strategy)
@@ -473,6 +485,7 @@ class Runner:
             camera_model=self.cfg.camera_model,
             with_ut=self.cfg.with_ut,
             with_eval3d=self.cfg.with_eval3d,
+            tile_size=self.cfg.tile_size,
             **kwargs,
         )
         if masks is not None:
@@ -580,6 +593,9 @@ class Runner:
                     render_mode="RGB+ED" if cfg.depth_loss else "RGB",
                     masks=masks,
                 )
+
+                if masks is not None:
+                    pixels[~masks] = 0
 
                 if renders.shape[-1] == 4:
                     colors, depths = renders[..., 0:3], renders[..., 3:4]

@@ -161,6 +161,13 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             value=0.2,
             group="allParams"
         ),
+        desc.IntParam(
+            name="tile_size",
+            label="Tile Size", 
+            description="Size of a gpu tile for rendering.",
+            value=16,
+            group="allParams",
+        ),
         desc.FloatParam(
             name="near_plane",
             label="Rendering Near Plane",
@@ -389,16 +396,14 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="refine_start_iter", 
             description="Start refining GSs after this iteration.",
             value=500,
-            group="allParams",
-            enabled=lambda node: node.strategy.value == "default"
+            group="allParams"
         ),
         desc.IntParam(
             name="refine_stop_iter",
             label="refine_stop_iter", 
             description="Stop refining GSs after this iteration.",
-            value=15000,
             group="allParams",
-            enabled=lambda node: node.strategy.value == "default"
+            value=15000,
         ),
         desc.IntParam(
             name="reset_every",
@@ -413,8 +418,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="refine_every", 
             description=" Refine GSs every this steps.",
             value=100,
-            group="allParams",
-            enabled=lambda node: node.strategy.value == "default"
+            group="allParams"
         ),
         desc.IntParam(
             name="pause_refine_after_reset",
@@ -439,6 +443,30 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             value=False,
             group=None,
             enabled=lambda node: node.strategy.value == "default"
+        ),
+        desc.IntParam(
+            name="cap_max",
+            label="cap_max", 
+            description="Maximum number of GS.",
+            value=1000000,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "mcmc"
+        ),
+        desc.FloatParam(
+            name="noise_lr",
+            label="noise_lr", 
+            description="MCMC samping noise learning rate.",
+            value=5e5,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "mcmc"
+        ),
+        desc.FloatParam(
+            name="min_opacity",
+            label="min_opacity", 
+            description="GSs with opacity below this value will be pruned.",
+            value=0.005,
+            group="allParams",
+            enabled=lambda node: node.strategy.value == "mcmc"
         ),
         desc.BoolParam(
             name="custom_ckpts",
