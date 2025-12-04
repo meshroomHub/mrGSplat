@@ -434,7 +434,6 @@ class Runner:
         Ks: Tensor,
         width: int,
         height: int,
-        masks: Optional[Tensor] = None,
         rasterize_mode: Optional[Literal["classic", "antialiased"]] = None,
         camera_model: Optional[Literal["pinhole", "ortho", "fisheye"]] = None,
         **kwargs,
@@ -488,8 +487,7 @@ class Runner:
             tile_size=self.cfg.tile_size,
             **kwargs,
         )
-        if masks is not None:
-            render_colors[~masks] = 0
+
         return render_colors, render_alphas, info
 
     def train(self):
@@ -591,11 +589,7 @@ class Runner:
                     far_plane=cfg.far_plane,
                     image_ids=image_ids,
                     render_mode="RGB+ED" if cfg.depth_loss else "RGB",
-                    masks=masks,
                 )
-
-                if masks is not None:
-                    pixels[~masks] = 0
 
                 if renders.shape[-1] == 4:
                     colors, depths = renders[..., 0:3], renders[..., 3:4]
@@ -627,6 +621,11 @@ class Runner:
                     step=step,
                     info=info,
                 )
+
+                if masks is not None:
+                    colors[~masks] = 0
+                    pixels[~masks] = 0
+
 
                 # loss
                 l1loss = F.l1_loss(colors, pixels)
