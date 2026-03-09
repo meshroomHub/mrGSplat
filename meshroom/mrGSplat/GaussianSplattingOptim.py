@@ -80,21 +80,21 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="sfmData",
             description="SfMData with the views, poses and intrinsics to use.",
             value="",
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.BoolParam(
             name="image_alpha",
             label="Images have alpha channel",
             description="Set to True if images has an alpha channel.",
             value=False,
-            group=None
+            commandLineGroup=None
         ),
         desc.File(
             name="resume_ckpt",
             label="Resume From Model",
             description="Resume from Model",
             value="",
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.ChoiceParam(
             name='strategy',
@@ -103,7 +103,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             value='default',
             values=['default', 'mcmc'],
             exclusive=True,
-            group=None
+            commandLineGroup=None
         ),
         desc.IntParam(
             name="max_epochs",
@@ -111,7 +111,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             description="The number of epochs performed by the optimization.\n"
                         "60 for quick debug, 600 for good quality.",
             value=600,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.IntParam(
             name="patchSize",
@@ -119,7 +119,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             description="Size of randomly cropped patches\n"
                         "Use a value of 0 to disable random crop.",
             value=0,
-            group=None,
+            commandLineGroup=None,
         ),
         desc.IntParam(
             name="sh_degree",
@@ -127,7 +127,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             description="How many degrees are we using to describe texture in a splat.",
             value=3,
             range=[0, 6, 1],
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.IntParam(
             name="sh_degree_interval",
@@ -136,7 +136,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             "We start with 0 degree and activate a new harmonic degree each sh_degree_interval steps.",
             value=1000,
             range=[100, 100000, 100],
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.FloatParam(
             name="init_opa",
@@ -144,7 +144,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             description="A gaussian splat is initialized with an opacity between 0 and 1",
             value=0.1,
             range=[0.0, 1.0, 0.1],
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.FloatParam(
             name="init_scale",
@@ -152,119 +152,119 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             description="A gaussian splat is initialized with a scale",
             value=1.0,
             range=[0.0, 1.0, 0.1],
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.FloatParam(
             name="ssim_lambda",
             label="Weight SSIM",
             description="Weight of the SSIM loss in the total loss",
             value=0.2,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.IntParam(
             name="tile_size",
             label="Tile Size", 
             description="Size of a gpu tile for rendering.",
             value=16,
-            group="allParams",
+            commandLineGroup="allParams",
         ),
         desc.FloatParam(
             name="near_plane",
             label="Rendering Near Plane",
             description="Near plane used for rendering frustum",
             value=0.01,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.FloatParam(
             name="far_plane",
             label="Rendering Far Plane",
             description="Far plane used for rendering frustum",
             value=1e10,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.FloatParam(
             name="means_lr",
             label="Gaussian Centers LR",
             description="Gaussian Centers Learning Rate",
             value=1.6e-4,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.FloatParam(
             name="scales_lr",
             label="Gaussian Scales LR",
             description="Gaussian Scales Learning Rate",
             value=5e-3,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.FloatParam(
             name="opacities_lr",
             label="Gaussian Opacities LR",
             description="Gaussian Opacities Learning Rate",
             value=5e-2,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.FloatParam(
             name="quats_lr",
             label="Gaussian Orientation LR",
             description="Gaussian Orientation Learning Rate",
             value=1e-3,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.FloatParam(
             name="sh0_lr",
             label="Gaussian Brightness LR",
             description="Gaussian Brightness Learning Rate (Spherical harmonics 1st degree)",
             value=2.5e-3,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.FloatParam(
             name="opacity_reg",
             label="Opacity regularization",
             description="Opacity regularization weight",
             value=0.0,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.FloatParam(
             name="scale_reg",
             label="Scale regularization",
             description="Scale regularization weight",
             value=0.0,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.BoolParam(
             name="sparseGradient",
             label="Use Sparse Gradients",
             description="Use sparse gradients for optimization.",
             value=False,
-            group=None
+            commandLineGroup=None
         ),
         desc.BoolParam(
             name="visibleAdam",
             label="Use Visible Adam",
             description="Use visible adam from Taming 3DGS.",
             value=False,
-            group=None
+            commandLineGroup=None
         ),
         desc.BoolParam(
             name="randomBkgd",
             label="Use Random Background",
             description="Use random background for training to discourage transparency.",
             value=False,
-            group=None
+            commandLineGroup=None
         ),
         desc.BoolParam(
             name="poseOpt",
             label="Use Pose Optimization",
             description="Use pose optimization.",
             value=False,
-            group=None
+            commandLineGroup=None
         ),
         desc.FloatParam(
             name="pose_opt_lr",
             label="Pose optimization LR",
             description="Pose Optimization Learning Rate",
             value=1e-5,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.poseOpt.value
         ),
         desc.FloatParam(
@@ -272,7 +272,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="Pose optimization regularization",
             description="Regularization for camera optimization as weight decay",
             value=1e-6,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.poseOpt.value
         ),
         # Rendering doesn't work for the moment with that ?
@@ -281,14 +281,14 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
         #     label="Use Appearance Optimization",
         #     description="Use appearance optimization.",
         #     value=False,
-        #     group=None
+        #     commandLineGroup=None
         # ),
         # desc.FloatParam(
         #     name="app_opt_lr",
         #     label="Appearance optimization LR",
         #     description="Appearance Optimization Learning Rate",
         #     value=1e-3,
-        #     group="allParams",
+        #     commandLineGroup="allParams",
         #     enabled=lambda node: node.appOpt.value
         # ),
         # desc.FloatParam(
@@ -296,7 +296,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
         #     label="Appearance optimization regularization",
         #     description="Regularization for Appearance optimization as weight decay",
         #     value=1e-6,
-        #     group="allParams",
+        #     commandLineGroup="allParams",
         #     enabled=lambda node: node.appOpt.value
         # ),
         desc.BoolParam(
@@ -304,28 +304,28 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="Use Bilateral Grid",
             description="Use Bilateral Grid.",
             value=False,
-            group=None
+            commandLineGroup=None
         ),
         desc.BoolParam(
             name="useFusedBilagrid",
             label="Use Fused Bilateral Grid",
             description="Use Fused Bilateral Grid.",
             value=False,
-            group=None
+            commandLineGroup=None
         ),
         desc.BoolParam(
             name="useDepthLoss",
             label="Use Depth Loss",
             description="Use Depth Loss in optimization.",
             value=False,
-            group=None
+            commandLineGroup=None
         ),
         desc.FloatParam(
             name="depth_lambda",
             label="Depth weight",
             description="depth weight in optimization",
             value=1e-2,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.useDepthLoss.value
         ),
         desc.BoolParam(
@@ -333,14 +333,14 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="Use 3DGut Method",
             description="Use 3DGut method.",
             value=False,
-            group=None
+            commandLineGroup=None
         ),
         desc.FloatParam(
             name="prune_opa",
             label="prune_opa", 
             description="GSs with opacity below this value will be pruned.",
             value=0.005,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.strategy.value == "default"
         ),
         desc.FloatParam(
@@ -348,7 +348,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="grow_grad2d", 
             description="GSs with image plane gradient above this value will be split/duplicated.",
             value=0.0002,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.strategy.value == "default"
         ),
         desc.FloatParam(
@@ -356,7 +356,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="grow_scale3d", 
             description="GSs with 3d scale (normalized by scene_scale) below this value will be duplicated. Above will be split.",
             value=0.01,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.strategy.value == "default"
         ),
         desc.FloatParam(
@@ -364,7 +364,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="grow_scale2d", 
             description="GSs with 2d scale (normalized by image resolution) above this value will be split",
             value=0.05,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.strategy.value == "default"
         ),
         desc.FloatParam(
@@ -372,7 +372,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="prune_scale3d", 
             description="GSs with 3d scale (normalized by scene_scale) above this value will be pruned.",
             value=0.1,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.strategy.value == "default"
         ),
         desc.FloatParam(
@@ -380,7 +380,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="prune_scale2d", 
             description="GSs with 2d scale (normalized by image resolution) above this value will be pruned",
             value=0.15,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.strategy.value == "default"
         ),
         desc.IntParam(
@@ -388,7 +388,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="refine_scale2d_stop_iter", 
             description="Stop refining GSs based on 2d scale after this iteration.",
             value=0,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.strategy.value == "default"
         ),
         desc.IntParam(
@@ -396,13 +396,13 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="refine_start_iter", 
             description="Start refining GSs after this iteration.",
             value=500,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.IntParam(
             name="refine_stop_iter",
             label="refine_stop_iter", 
             description="Stop refining GSs after this iteration.",
-            group="allParams",
+            commandLineGroup="allParams",
             value=15000,
         ),
         desc.IntParam(
@@ -410,7 +410,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="reset_every", 
             description="Reset opacities every this steps.",
             value=3000,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.strategy.value == "default"
         ),
         desc.IntParam(
@@ -418,14 +418,14 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="refine_every", 
             description=" Refine GSs every this steps.",
             value=100,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.IntParam(
             name="pause_refine_after_reset",
             label="pause_refine_after_reset", 
             description="Pause refining GSs until this number of steps after reset, Default is 0 (no pause at all) and one might want to set this number to the number of images in training set.",
             value=0,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.strategy.value == "default"
         ),
         desc.BoolParam(
@@ -433,7 +433,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="absgrad", 
             description="Use absolute gradients for GS splitting.",
             value=False,
-            group=None,
+            commandLineGroup=None,
             enabled=lambda node: node.strategy.value == "default"
         ),
         desc.BoolParam(
@@ -441,7 +441,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="revised_opacity", 
             description="hether to use revised opacity heuristic from arXiv:2404.06109 (experimental).",
             value=False,
-            group=None,
+            commandLineGroup=None,
             enabled=lambda node: node.strategy.value == "default"
         ),
         desc.IntParam(
@@ -449,7 +449,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="cap_max", 
             description="Maximum number of GS.",
             value=1000000,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.strategy.value == "mcmc"
         ),
         desc.FloatParam(
@@ -457,7 +457,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="noise_lr", 
             description="MCMC samping noise learning rate.",
             value=5e5,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.strategy.value == "mcmc"
         ),
         desc.FloatParam(
@@ -465,7 +465,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="min_opacity", 
             description="GSs with opacity below this value will be pruned.",
             value=0.005,
-            group="allParams",
+            commandLineGroup="allParams",
             enabled=lambda node: node.strategy.value == "mcmc"
         ),
         desc.BoolParam(
@@ -473,7 +473,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="Use custom checkpoints",
             description="Set to True to provide custom checkpoints; default behavior is to save the model once, at the end of the optimization.",
             value=False,
-            group=None
+            commandLineGroup=None
         ),
         desc.ListAttribute(
             desc.IntParam(
@@ -485,7 +485,7 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             name="save_epochs",
             label="Saving epochs",
             description="All the epochs at which the model will be saved as a check point.",
-            group=None,
+            commandLineGroup=None,
             enabled=lambda node: node.custom_ckpts.value
         )
     ]
@@ -496,13 +496,13 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="Output",
             description="Output folder.",
             value="{nodeCacheFolder}",
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.File(
             name="model",
             label="Model",
             description="Optimized gaussian splatting model",
             value = lambda attr: "{nodeCacheFolder}" + f"/ckpts/ckpt_{attr.node.max_epochs.value-1}_rank0.pt",
-            group=""
+            commandLineGroup=""
         )
     ]

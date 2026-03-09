@@ -31,14 +31,14 @@ This node computes the rasterization of a given gaussian splatting model from gi
             label="Cameras",
             description="SfMData with the views, poses and intrinsics to use (in JSON format).",
             value="",
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.File(
             name="model",
             label="Model",
             description="Gaussian splats (.ckpt) to render.",
             value="",
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.ChoiceParam(
             name='output_format',
@@ -47,7 +47,7 @@ This node computes the rasterization of a given gaussian splatting model from gi
             value='auto',
             values=['auto', '.jpg', '.png', '.exr'],
             exclusive=True,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.ChoiceParam(
             name='output_colorspace',
@@ -56,7 +56,7 @@ This node computes the rasterization of a given gaussian splatting model from gi
             value='AUTO',
             values=COLOR_SPACES,
             exclusive=True,
-            group="allParams"
+            commandLineGroup="allParams"
         ),
     ]
 
@@ -66,7 +66,7 @@ This node computes the rasterization of a given gaussian splatting model from gi
             label="Output",
             description="Output folder.",
             value="{nodeCacheFolder}",
-            group="allParams"
+            commandLineGroup="allParams"
         ),
         desc.File(
             name="frames",
@@ -74,13 +74,13 @@ This node computes the rasterization of a given gaussian splatting model from gi
             description="Frames rendered using gaussian splatting.",
             semantic="image", # use "image" for <VIEW_ID> logic
             value="{nodeCacheFolder}/renders/<VIEW_ID>.exr",  # _<FILESTEM>
-            group="",
+            commandLineGroup="",
         ),
         desc.File(
             name="render_folder",
             label="Render Folder",
             description="Output folder.",
             value="{nodeCacheFolder}/renders",
-            group="",
+            commandLineGroup="",
         ),
     ]
