@@ -30,35 +30,35 @@ class SfmSceneManager:
             path = Path(path)
         self._path = path
         self._sfmData = SfmReader(path)
-    
+
     @property
     def intrinsics(self) -> List[SfmIntrinsic]:
         """
         Intrinsics are the camera parameters
         """
         return self._sfmData.intrinsics
-    
+
     @property
     def views(self) -> List[SfmView]:
         """
         Views are the images we feed to the photogrammetry to get poses, landmarks, etc
         """
         return self._sfmData.views
-    
+
     @property
     def poses(self) -> Dict[int, SfmPose]:
         """
         Poses are all the viewpoints extracted by the photogrammetry process
         """
         return self._sfmData.poses
-    
+
     @property
     def landmarks(self) -> List[SfmLandmark]:
         """
         Landmarks are the reconstructed points in the 3D environment
         """
         return self._sfmData.landmarks
-    
+
     @property
     def poseId_to_viewId(self) -> Dict[int, SfmView]:
         if getattr(self, "__poseId_to_viewId", None) is None:
@@ -70,7 +70,7 @@ class SfmSceneManager:
                 if poseId not in self.__poseId_to_viewId.keys():
                     self.__poseId_to_viewId[poseId] = None
         return self.__poseId_to_viewId
-    
+
     @property
     def viewId_to_poseId(self) -> Dict[int, SfmView]:
         if getattr(self, "__viewId_to_poseId", None) is None:
@@ -79,13 +79,13 @@ class SfmSceneManager:
                 if poseId not in self.poses:
                     self.__viewId_to_poseId[viewId] = None
         return self.__viewId_to_poseId
-    
+
     @property
     def viewId_to_view(self) -> Dict[int, SfmView]:
         if getattr(self, "__viewId_to_view", None) is None:
             self.__viewId_to_view = {view.viewId: view for view in self.views}
         return self.__viewId_to_view
-    
+
     @property
     def name_to_image_id(self) -> Dict[str, int]:
         if getattr(self, "__name_to_image_id", None) is None:
@@ -94,7 +94,7 @@ class SfmSceneManager:
                 imagePath = Path(view.imagePath).stem
                 self.__name_to_image_id[imagePath] = view.frameId
         return self.__name_to_image_id
-    
+
     @property
     def intrinsics_dict(self) -> Dict[int, SfmIntrinsic]:
         if getattr(self, "__intrinsics_dict", None) is None:
@@ -122,12 +122,12 @@ class Parser:
                  metadataFolder: Optional[str] = None,
                  image_alpha: bool = False):
         self.sfmFile = sfmFile
-        # TODO : not convienient to use different poses when we have normalization that depend on dataset
-        self.normalize = False  # normalize  
+        # TODO : not convenient to use different poses when we have normalization that depend on dataset
+        self.normalize = False  # normalize
         self.image_alpha = image_alpha
-        
+
         manager = SfmSceneManager(self.sfmFile)
-        
+
         self.masks_exist = masksFolder and os.path.isdir(masksFolder)
 
         # Extract extrinsic matrices in world-to-camera format.
@@ -136,7 +136,7 @@ class Parser:
         Ks_dict = dict()
         imsize_dict = dict()  # width, height
         missing_poses = set()
-        
+
         for k, view in enumerate(manager.views):
             pose = manager.poses.get(view.poseId, None)
             if pose is None:
@@ -152,7 +152,7 @@ class Parser:
             intrinsic = manager.intrinsics_dict[camera_id]
             K = intrinsic.get_K()
             Ks_dict[camera_id] = K
-        
+
         print(f"[Parser] {len(manager.views)-len(missing_poses)}/{len(manager.views)} views, taken by {len(set(camera_ids))} cameras.")
         if len(manager.views)-len(missing_poses) <= 0:
             raise ValueError("No usable view !")
@@ -161,7 +161,7 @@ class Parser:
 
         # Convert extrinsics to camera-to-world.
         camtoworlds = np.linalg.inv(w2c_mats)
-        
+
         # Image names
         image_names = [v.imageName for v in manager.views if v.poseId not in missing_poses]
         image_paths = [v.imagePath for v in manager.views if v.poseId not in missing_poses]
@@ -171,7 +171,7 @@ class Parser:
         image_paths = [image_paths[i] for i in inds]
         camtoworlds = camtoworlds[inds]
         camera_ids = [camera_ids[i] for i in inds]
-        
+
         # Load external configuration (self.extconf) and bounds (self.bounds that is used in the trainer)
         self.extconf = {
             "spiral_radius_scale": 1.0,
@@ -180,11 +180,11 @@ class Parser:
         self.bounds = np.array([0.01, 1.0])
         if metadataFolder:
             self.load_extconf(metadataFolder)
-        
+
         # 3D points and {image_name -> [point_idx]}
         points = np.array([p.position for p in manager.landmarks])
         points_rgb = np.array([p.color for p in manager.landmarks])
-        
+
         point_indices = {}
         for point_id, viewIds in manager.landmarkId_to_viewId.items():
             for viewId in viewIds:
@@ -222,9 +222,9 @@ class Parser:
         self.points_rgb = points_rgb  # np.ndarray, (num_points, 3)
         self.point_indices = point_indices  # Dict[str, np.ndarray], image_name -> [M,]
         self.transform = transform  # np.ndarray, (4, 4)
-        
+
         self.mesh = Mesh(mesh)
-        
+
         self.apply_scale()
 
         # size of the scene measured by cameras
@@ -232,7 +232,7 @@ class Parser:
         scene_center = np.mean(camera_locations, axis=0)
         dists = np.linalg.norm(camera_locations - scene_center, axis=1)
         self.scene_scale = np.max(dists)
-    
+
     def save_cameras(self, path):
         to_write = ""
         # Intrinsics
@@ -261,10 +261,10 @@ class Parser:
         posefile = os.path.join(metadataFolder, "poses_bounds.npy")
         if os.path.exists(posefile):
             self.bounds = np.load(posefile)[:, -2:]
-    
+
     def apply_scale(self, s_height=1, s_width=1):
         """ Sometimes the intrinsics corresponds to 2x upsampled images so we need to use this
-        
+
         s_height = actual_height / colmap_height
         s_width  = actual_width  / colmap_width
         """
@@ -286,11 +286,11 @@ class PoseParser(Parser):
                  masksFolder: str = None,
                  metadataFolder: str = None):
         self.sfmFile = sfmFile
-        # TODO : not convienient to use different poses when we have normalization that depend on dataset
-        self.normalize = False  # normalize  
-        
+        # TODO : not convenient to use different poses when we have normalization that depend on dataset
+        self.normalize = False  # normalize
+
         manager = SfmSceneManager(self.sfmFile)
-        
+
         self.masks_exist = masksFolder and os.path.isdir(masksFolder)
 
         # Extract extrinsic matrices in world-to-camera format.
@@ -299,7 +299,7 @@ class PoseParser(Parser):
         camera_ids = []
         imsize_dict = dict()  # width, height
         intrinsicsDict = dict()
-        
+
         for poseId, pose in manager.poses.items():
             # Cam matrix (extrinsic)
             pose_ids.append(poseId)
@@ -311,12 +311,12 @@ class PoseParser(Parser):
                 continue
             view = manager.viewId_to_view[viewId]
             camera_ids.append(view.intrinsicId)
-        
+
         for camera_id, intrinsic in manager.intrinsics_dict.items():
             imsize_dict[camera_id] = (int(intrinsic.W), int(intrinsic.H))
             K = intrinsic.get_K()
             intrinsicsDict[camera_id] = K
-        
+
         print(f"[BaseParser] {len(w2c_mats)} poses, taken by {len(set(camera_ids))} cameras.")
         if len(w2c_mats) <= 0:
             raise ValueError("No usable pose !")
@@ -324,14 +324,14 @@ class PoseParser(Parser):
         w2c_mats = np.stack(w2c_mats, axis=0)
         # Convert extrinsics to camera-to-world.
         camtoworlds = np.linalg.inv(w2c_mats)
-        
+
         # Create order from pose ID
         inds = np.argsort(pose_ids)
         # Reorder lists
         pose_ids = [pose_ids[i] for i in inds]
         camtoworlds = camtoworlds[inds]
         camera_ids = [camera_ids[i] for i in inds]
-        
+
         # Find images linked to poses if they exist
         image_names = []
         image_paths = []
@@ -344,7 +344,7 @@ class PoseParser(Parser):
             else:
                 image_names.append(None)
                 image_paths.append(None)
-        
+
         # Load external configuration (self.extconf) and bounds (self.bounds that is used in the trainer)
         self.extconf = {
             "spiral_radius_scale": 1.0,
@@ -353,7 +353,7 @@ class PoseParser(Parser):
         self.bounds = np.array([0.01, 1.0])
         if metadataFolder:
             self.load_extconf(metadataFolder)
-        
+
         self.pose_ids = pose_ids  # List[str], (num_poses,)
         self.image_names = image_names  # List[str], (num_poses,)
         self.image_paths = image_paths  # List[str], (num_poses,)
@@ -361,7 +361,7 @@ class PoseParser(Parser):
         self.camera_ids = camera_ids  # List[int], (num_images,)
         self.Ks_dict = intrinsicsDict  # Dict of camera_id -> K
         self.imsize_dict = imsize_dict  # Dict of camera_id -> (width, height)
-        
+
         self.apply_scale()
 
 
@@ -392,25 +392,25 @@ class Dataset:
             # if pre_load_images:
             #     for index in self.indices:
             #         self.get_mask(index)
-    
+
     def __len__(self):
         return len(self.indices)
-    
+
     def get_image(self, index) -> AvImage:
         return AvImage(self.parser.image_paths[index], alpha=self.parser.image_alpha, open=True)
-    
+
     def __getitem__(self, item: int) -> Dict[str, Any]:
         index = self.indices[item]
-        
+
         image = self.get_image(index)
         pixels = image.pixels
         camera_id = self.parser.camera_ids[index]
-        K = self.parser.Ks_dict[camera_id].copy() 
+        K = self.parser.Ks_dict[camera_id].copy()
         camtoworlds = self.parser.camtoworlds[index]
-        
+
         if image.hasAlpha:
             mask = image.get_alpha_mask()
-        
+
         image_name = self.parser.image_names[index]
 
         if self.patch_size is not None:

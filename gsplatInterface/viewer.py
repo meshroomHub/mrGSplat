@@ -22,12 +22,12 @@ from datasets.sfm.sceneManager import PoseParser
 
 def get_cameras_from_sfm(sfmFile):
     cameras = []
-    
+
     psr = PoseParser(
         sfmFile=sfmFile,
         normalize=True
     )
-    
+
     # Find a default intrinsic
     valid_intrinsics = [el for el in psr.camera_ids if el is not None]
     default_cam_id = None
@@ -37,7 +37,7 @@ def get_cameras_from_sfm(sfmFile):
     else:
         # Take the first intrinsic we have
         default_cam_id = list(psr.Ks_dict.keys())[0]
-    
+
     # Build list of cameras
     for pose_id, img_name, camId, c2w in zip(psr.pose_ids, psr.image_names, psr.camera_ids, psr.camtoworlds):
         if camId is None:
@@ -49,7 +49,7 @@ def get_cameras_from_sfm(sfmFile):
             K=K
         )
         cameras.append((pose_id, cam, img_name, imsize))
-    
+
     return cameras
 
 
@@ -74,14 +74,14 @@ def main(local_rank: int, world_rank, world_size: int, args):
     shN = torch.cat(shN, dim=0)
     colors = torch.cat([sh0, shN], dim=-2)
     sh_degree = int(math.sqrt(colors.shape[-2]) - 1)
-    
+
     print("Number of Gaussians:", len(means))
 
     @torch.no_grad()
     def viewer_render_fn(camera_state: CameraState, render_tab_state: GSplatRenderTabState):
         width = render_tab_state.render_width
         height = render_tab_state.render_height
- 
+
         c2w = camera_state.c2w
         K = camera_state.get_K((width, height))
         c2w = torch.from_numpy(c2w).float().to(device)
@@ -152,10 +152,10 @@ def main(local_rank: int, world_rank, world_size: int, args):
                 apply_float_colormap(alpha, render_tab_state.colormap).cpu().numpy()
             )
         return renders
-    
+
     cameras = get_cameras_from_sfm(args.cameras)
     render_tab_state = GSplatRenderTabState()
-    
+
     total_render_time = 0.
     min_render_time, max_render_time = None, 0.
     for pose_id, camera, imgName, imgSize in createProgressBar(cameras, desc="Rendering images..."):
@@ -204,13 +204,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output_colorspace", type=str, help="Output colorspace (you can use AUTO, SRGB, ...)"
     )
-    
+
     args = parser.parse_args()
-    
+
     output_dir = os.path.join(args.output_dir, "renders")
     if os.path.exists(output_dir):
         os.rmdir(output_dir)
     os.makedirs(output_dir)
     args.output_dir = output_dir
-    
+
     cli(main, args, verbose=True)

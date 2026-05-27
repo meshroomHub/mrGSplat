@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from common import (
-    CameraState, 
-    RenderTabState, GSplatRenderTabState, 
-    apply_float_colormap, 
+    CameraState,
+    RenderTabState, GSplatRenderTabState,
+    apply_float_colormap,
     createProgressBar, createProgressBarRange
 )
 
@@ -45,7 +45,7 @@ from gsplat.strategy import DefaultStrategy, MCMCStrategy
 
 @dataclass
 class Config:
-    # Path to the .pt files. If provide, it will skip training and run evaluation only.
+    # Path to the .pt files. If provided, it will skip training and run evaluation only.
     ckpt: Optional[List[str]] = None
     # Path to the .pt files to load and resume training
     resume_ckpt: Optional[str] = ""
@@ -54,7 +54,7 @@ class Config:
     sfm_file: str = "sfm.json"
     image_alpha: bool = False
     metadata_folder: str = ""
-    
+
     # Directory to save results
     result_dir: str = "results/garden"
     # Random crop size for training  (experimental)
@@ -70,13 +70,13 @@ class Config:
 
     # Number of training steps
     max_epochs: int = 600
-    
+
     # Steps to save the model
     save_epochs: List[int] = field(
         default_factory=lambda: [150, 600],
         metadata=dict(nargs="*")
     )
-    
+
     # Degree of spherical harmonics
     sh_degree: int = 3
     # Turn on another SH degree every this steps
@@ -101,7 +101,7 @@ class Config:
     # Use packed mode for rasterization, this leads to less memory usage but slightly slower.
     packed: bool = False
     # Use sparse gradients for optimization. (experimental)
-    sparse_grad: bool = False 
+    sparse_grad: bool = False
     # Use visible adam from Taming 3DGS. (experimental)
     visible_adam: bool = False
     # Anti-aliasing in rasterization. Might slightly hurt quantitative metrics.
@@ -146,7 +146,7 @@ class Config:
 
     # Enable bilateral grid. (experimental)
     use_bilateral_grid: bool = False
-    
+
     # Whether use fused-bilateral grid
     use_fused_bilagrid: bool = False
     # Shape of the bilateral grid (X, Y, W)
@@ -157,13 +157,13 @@ class Config:
     # Weight for depth loss
     depth_lambda: float = 1e-2
 
-    # tile size 
+    # tile size
     tile_size: int = 16
 
     # 3DGUT (uncented transform + eval 3D)
     with_ut: bool = False
     with_eval3d: bool = False
-    
+
     #Strategy default
     prune_opa: float = 0.005
     grow_grad2d: float = 0.0002
@@ -335,7 +335,7 @@ class Runner:
         print("Model initialized. Number of GS:", len(self.splats["means"]))
 
         # Densification Strategy
-        
+
         self.cfg.strategy.check_sanity(self.splats, self.optimizers)
 
         if isinstance(self.cfg.strategy, DefaultStrategy):
@@ -359,11 +359,11 @@ class Runner:
         elif isinstance(self.cfg.strategy, MCMCStrategy):
             self.cfg.strategy.cap_max = self.cfg.cap_max
             self.cfg.strategy.noise_lr = self.cfg.noise_lr
-            self.cfg.strategy.refine_start_iter = self.cfg.refine_start_iter 
-            self.cfg.strategy.refine_stop_iter = self.cfg.refine_stop_iter 
-            self.cfg.strategy.refine_every = self.cfg.refine_every 
-            self.cfg.strategy.min_opacity = self.cfg.min_opacity 
-            self.cfg.strategy.verbose = True 
+            self.cfg.strategy.refine_start_iter = self.cfg.refine_start_iter
+            self.cfg.strategy.refine_stop_iter = self.cfg.refine_stop_iter
+            self.cfg.strategy.refine_every = self.cfg.refine_every
+            self.cfg.strategy.min_opacity = self.cfg.min_opacity
+            self.cfg.strategy.verbose = True
             self.strategy_state = self.cfg.strategy.initialize_state()
         else:
             assert_never(self.cfg.strategy)
@@ -383,7 +383,6 @@ class Runner:
             if world_size > 1:
                 self.pose_adjust = DDP(self.pose_adjust)
 
-        
 
         self.app_optimizers = []
         if cfg.app_opt:
@@ -540,18 +539,18 @@ class Runner:
             persistent_workers=True,
             pin_memory=True,
         )
-        
+
 
         # Training loop.
         dsize = len(self.trainset)
         global_tic = time.time()
         pbar = createProgressBar(range(0, cfg.max_epochs))
         for epoch in pbar:
-            
+
             trainloader_iter = iter(trainloader)
 
             for substep in range(0, dsize):
-                
+
                 step = epoch * dsize + substep
                 data = next(trainloader_iter)
 
@@ -564,7 +563,7 @@ class Runner:
                 )
                 image_ids = data["image_id"].to(device)
                 masks = data["mask"].to(device) if "mask" in data else None  # [1, H, W]
-                
+
                 if cfg.depth_loss:
                     points = data["points"].to(device)  # [1, M, 2]
                     depths_gt = data["depths"].to(device)  # [1, M]
@@ -669,9 +668,9 @@ class Runner:
                 desc = f"loss={loss.item():.3f}| " f"sh degree={sh_degree_to_use}| "
                 if cfg.depth_loss:
                     desc += f"depth loss={depthloss.item():.6f}| "
-           
+
                 pbar.set_description(desc)
-                    
+
 
                 # Turn Gradients into Sparse Tensor before running optimizer
                 if cfg.sparse_grad:
@@ -739,12 +738,12 @@ class Runner:
                     )
                 else:
                     assert_never(self.cfg.strategy)
-            
+
             if epoch in [i - 1 for i in cfg.save_epochs] or epoch == cfg.max_epochs - 1:
 
                 path = f"{self.ckpt_dir}/ckpt_{epoch}_rank{self.world_rank}.pt"
                 data = {"step": step, "splats": self.splats.state_dict()}
-                
+
                 if cfg.pose_opt:
                     if world_size > 1:
                         data["pose_adjust"] = self.pose_adjust.module.state_dict()
@@ -755,12 +754,12 @@ class Runner:
                         data["app_module"] = self.app_module.module.state_dict()
                     else:
                         data["app_module"] = self.app_module.state_dict()
-                
+
                 torch.save(data, path)
 
 
 def main(local_rank: int, world_rank, world_size: int, cfg: Config):
-    
+
     #Create object for computation
     runner = Runner(local_rank, world_rank, world_size, cfg)
 
@@ -776,7 +775,7 @@ def main(local_rank: int, world_rank, world_size: int, cfg: Config):
 
 
 if __name__ == "__main__":
-    
+
     import sys
     from argparse_dataclass import ArgumentParser
 
