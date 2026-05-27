@@ -570,6 +570,8 @@ class Runner:
 
             trainloader_iter = iter(trainloader)
 
+            epochLoss = 0.
+
             for substep in range(0, dsize):
 
                 step = step + 1
@@ -655,6 +657,7 @@ class Runner:
                     colors.permute(0, 3, 1, 2), pixels.permute(0, 3, 1, 2), padding="valid"
                 )
                 loss = l1loss * (1.0 - cfg.ssim_lambda) + ssimloss * cfg.ssim_lambda
+                epochLoss += loss.item()
 
                 if cfg.depth_loss:
                     # query depths from depth map
@@ -753,6 +756,9 @@ class Runner:
                     )
                 else:
                     assert_never(self.cfg.strategy)
+
+            if not cfg.use_progress_bar:
+                logging.info(f"Epoch ({epoch}) Loss: {epochLoss}")
 
             if epoch in [i - 1 for i in cfg.save_epochs] or epoch == cfg.max_epochs - 1:
 
