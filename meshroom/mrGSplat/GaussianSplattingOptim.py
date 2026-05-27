@@ -30,6 +30,10 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
 
         cmdLine += f" --save_epochs {saveEpochs}"
 
+        if node.mask_views.value and len(node.masked_views.value) > 0:
+            maskedViews = " ".join([str(e.value) for e in node.masked_views.value])
+            cmdLine += f" --mask_views {maskedViews}"
+
         if node.patchSize.value > 0:
             cmdLine += f" --patch_size {node.patchSize.value}"
 
@@ -449,6 +453,26 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             description="All the epochs at which the model will be saved as a check point.",
             commandLineGroup=None,
             enabled=lambda node: node.custom_ckpts.value
+        ),
+        desc.BoolParam(
+            name="mask_views",
+            label="Mask Views",
+            description="Activate to specify which views to remove from the training set (e.g. to use them for evaluation only).",
+            value=False,
+            commandLineGroup=None
+        ),
+        desc.ListAttribute(
+            desc.IntParam(
+                name="masked_view",
+                label="Masked View",
+                description="View to remove from the training set.",
+                value=0,
+            ),
+            name="masked_views",
+            label="Masked Views",
+            description="All the views to remove from the training set.",
+            commandLineGroup=None,
+            enabled=lambda node: node.mask_views.value
         )
     ]
 

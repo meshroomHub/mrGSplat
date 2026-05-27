@@ -85,6 +85,12 @@ class Config:
         metadata=dict(nargs="*")
     )
 
+    # Views to remove from the training set
+    mask_views: List[int] = field(
+            default_factory = lambda: [],
+            metadata = dict(nargs="*")
+        )
+
     # Degree of spherical harmonics
     sh_degree: int = 3
     # Turn on another SH degree every this steps
@@ -306,6 +312,7 @@ class Runner:
             normalize=False,
             metadataFolder=cfg.metadata_folder,
             image_alpha=cfg.image_alpha,
+            maskedViewIDs=cfg.mask_views,
         )
 
         self.trainset = Dataset(

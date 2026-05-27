@@ -121,7 +121,9 @@ class Parser:
                  masksFolder: Optional[str] = None,
                  mesh: Optional[str] = None,
                  metadataFolder: Optional[str] = None,
-                 image_alpha: bool = False):
+                 image_alpha: bool = False,
+                 maskedViewIDs: list = [],
+                 ):
         self.sfmFile = sfmFile
         # TODO : not convenient to use different poses when we have normalization that depend on dataset
         self.normalize = False  # normalize
@@ -140,7 +142,7 @@ class Parser:
 
         for k, view in enumerate(manager.views):
             pose = manager.poses.get(view.poseId, None)
-            if pose is None:
+            if pose is None or view.viewId in maskedViewIDs:
                 missing_poses.add(view.poseId)
                 continue
             # Cam matrix (extrinsic)
