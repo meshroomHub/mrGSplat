@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import os
+
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+
 from common import (
     CameraState,
     RenderTabState, GSplatRenderTabState,
@@ -9,7 +13,6 @@ from common import (
 
 import json
 import math
-import os
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -582,6 +585,7 @@ class Runner:
                 # sh schedule
                 sh_degree_to_use = min(step // cfg.sh_degree_interval, cfg.sh_degree)
 
+                torch.cuda.empty_cache()
                 # forward
                 renders, alphas, info = self.rasterize_splats(
                     camtoworlds=camtoworlds,
@@ -594,6 +598,7 @@ class Runner:
                     image_ids=image_ids,
                     render_mode="RGB+ED" if cfg.depth_loss else "RGB",
                 )
+                torch.cuda.empty_cache()
 
                 if renders.shape[-1] == 4:
                     colors, depths = renders[..., 0:3], renders[..., 3:4]
