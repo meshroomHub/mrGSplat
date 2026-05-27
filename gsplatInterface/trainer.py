@@ -42,6 +42,11 @@ from gsplat.optimizers import SelectiveAdam
 from gsplat.rendering import rasterization
 from gsplat.strategy import DefaultStrategy, MCMCStrategy
 
+import logging
+loggingFormat = os.environ.get("GSPLAT_LOG_FORMAT",
+                               '[%(asctime)s.%(msecs)03d][%(levelname)s] (%(filename)s:%(lineno)d) %(message)s')
+dateFormat = os.environ.get("GSPLAT_LOG_DATEFORMAT", '%H:%M:%S')
+logging.basicConfig(level=logging.INFO, format=loggingFormat, datefmt=dateFormat)
 
 @dataclass
 class Config:
@@ -308,7 +313,7 @@ class Runner:
 
         self.scene_scale = self.parser.scene_scale * 1.1 * cfg.global_scale
 
-        print("Scene scale:", self.scene_scale)
+        logging.info(f"Scene scale: {self.scene_scale}")
 
         # Model
         feature_dim = 32 if cfg.app_opt else None
@@ -332,7 +337,7 @@ class Runner:
             world_rank=world_rank,
             world_size=world_size,
         )
-        print("Model initialized. Number of GS:", len(self.splats["means"]))
+        logging.info(f"Model initialized. Number of GS: {len(self.splats['means'])}")
 
         # Densification Strategy
 
@@ -726,7 +731,7 @@ class Runner:
                         info=info,
                         packed=cfg.packed,
                     )
-                    print("Number of GS:", len(self.splats["means"]))
+                    logging.info(f"Number of GS: {len(self.splats['means'])}")
                 elif isinstance(self.cfg.strategy, MCMCStrategy):
                     self.cfg.strategy.step_post_backward(
                         params=self.splats,
@@ -765,7 +770,7 @@ def main(local_rank: int, world_rank, world_size: int, cfg: Config):
 
     #if a checkpoint was passed, will load the gaussians from there
     if cfg.resume_ckpt != "":
-        print("Loading from checkpoint")
+        logging.info("Loading from checkpoint")
         ckpt = torch.load(cfg.resume_ckpt, map_location=runner.device, weights_only=True)
         for k in runner.splats.keys():
             runner.splats[k].data = torch.cat([ckpt["splats"][k]])

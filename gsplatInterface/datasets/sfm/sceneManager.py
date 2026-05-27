@@ -2,6 +2,7 @@
 
 import os
 import json
+import logging
 from pathlib import Path
 
 from typing import Union, List, Dict, Tuple
@@ -153,7 +154,7 @@ class Parser:
             K = intrinsic.get_K()
             Ks_dict[camera_id] = K
 
-        print(f"[Parser] {len(manager.views)-len(missing_poses)}/{len(manager.views)} views, taken by {len(set(camera_ids))} cameras.")
+        logging.info(f"[Parser] {len(manager.views)-len(missing_poses)}/{len(manager.views)} views, taken by {len(set(camera_ids))} camera(s).")
         if len(manager.views)-len(missing_poses) <= 0:
             raise ValueError("No usable view !")
 
@@ -317,7 +318,7 @@ class PoseParser(Parser):
             K = intrinsic.get_K()
             intrinsicsDict[camera_id] = K
 
-        print(f"[BaseParser] {len(w2c_mats)} poses, taken by {len(set(camera_ids))} cameras.")
+        logging.info(f"[BaseParser] {len(w2c_mats)} poses, taken by {len(set(camera_ids))} camera(s).")
         if len(w2c_mats) <= 0:
             raise ValueError("No usable pose !")
 

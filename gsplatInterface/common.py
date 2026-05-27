@@ -3,6 +3,7 @@
 import dataclasses
 
 from typing import Annotated, Literal, Optional, Tuple
+import logging
 import numpy as np
 import numpy.typing as npt
 import torch
@@ -154,7 +155,7 @@ class ProgressBar:
     @staticmethod
     def set_description(message):
         # No real solution with boost progress_display so just print is doing the job
-        print(message)
+        logging.info(message)
 
 def createProgressBar(items, desc=""):
     return iter(ProgressBar(items, desc))
