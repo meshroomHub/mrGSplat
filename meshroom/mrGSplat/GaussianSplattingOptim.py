@@ -73,6 +73,9 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
         if node.revisedOpacity.value:
             cmdLine += " --revised_opacity"
 
+        if node.useProgressBar.value:
+            cmdLine += f" --use_progress_bar"
+
         node.nodeDesc.commandLine = cmdLine
 
 
@@ -453,6 +456,13 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             description="All the epochs at which the model will be saved as a check point.",
             commandLineGroup=None,
             enabled=lambda node: node.custom_ckpts.value
+        ),
+        desc.BoolParam(
+            name="useProgressBar",
+            label="Use Progress Bar",
+            description="Use progress bar in the logging.",
+            value=False,
+            commandLineGroup=None,
         ),
         desc.BoolParam(
             name="mask_views",

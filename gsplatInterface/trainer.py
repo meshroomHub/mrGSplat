@@ -91,6 +91,9 @@ class Config:
             metadata = dict(nargs="*")
         )
 
+    # Use progress bar in the logging
+    use_progress_bar: bool = False
+
     # Degree of spherical harmonics
     sh_degree: int = 3
     # Turn on another SH degree every this steps
@@ -555,18 +558,21 @@ class Runner:
             pin_memory=True,
         )
 
+        step = -1
+
+        if not cfg.use_progress_bar:
+            logging.info("Training started")
 
         # Training loop.
         dsize = len(self.trainset)
-        global_tic = time.time()
-        pbar = createProgressBar(range(0, cfg.max_epochs))
+        pbar = createProgressBar(range(0, cfg.max_epochs), "Training progress:", cfg.use_progress_bar)
         for epoch in pbar:
 
             trainloader_iter = iter(trainloader)
 
             for substep in range(0, dsize):
 
-                step = epoch * dsize + substep
+                step = step + 1
                 data = next(trainloader_iter)
 
                 #Load data sample
@@ -682,13 +688,6 @@ class Runner:
 
                 loss.backward()
 
-                desc = f"loss={loss.item():.3f}| " f"sh degree={sh_degree_to_use}| "
-                if cfg.depth_loss:
-                    desc += f"depth loss={depthloss.item():.6f}| "
-
-                pbar.set_description(desc)
-
-
                 # Turn Gradients into Sparse Tensor before running optimizer
                 if cfg.sparse_grad:
                     assert cfg.packed, "Sparse gradients only work with packed mode."
@@ -743,7 +742,6 @@ class Runner:
                         info=info,
                         packed=cfg.packed,
                     )
-                    logging.info(f"Number of GS: {len(self.splats['means'])}")
                 elif isinstance(self.cfg.strategy, MCMCStrategy):
                     self.cfg.strategy.step_post_backward(
                         params=self.splats,
