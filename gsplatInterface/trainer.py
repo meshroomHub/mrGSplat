@@ -709,9 +709,7 @@ class Runner:
                 )
 
                 if masks is not None:
-                    colors[~masks] = 0
-                    pixels[~masks] = 0
-
+                    colors[~masks] = pixels[~masks]
 
                 # loss
                 l1loss = F.l1_loss(colors, pixels)
