@@ -253,26 +253,37 @@ def create_splats_with_optimizers(
     quats = torch.rand((N, 4))  # [N, 4]
     opacities = torch.logit(torch.full((N,), init_opacity))  # [N,]
 
+    global_lr_factor = 1.
+
+    # Adapt means_lr parameter so that a same value has a similar effect for the default strategy and MCMC
+    means_lr_factor = (1. if isinstance(strategy, MCMCStrategy) else 0.001) * global_lr_factor
+    logging.info(f"means_lr_factor: {means_lr_factor}")
+    scales_lr_factor = global_lr_factor
+    quats_lr_factor = global_lr_factor
+    opacities_lr_factor = global_lr_factor
+    sh0_lr_factor = global_lr_factor
+    shN_lr_factor = global_lr_factor
+
     params = [
         # name, value, lr
-        ("means", torch.nn.Parameter(points), means_lr * scene_scale),
-        ("scales", torch.nn.Parameter(scales), scales_lr),
-        ("quats", torch.nn.Parameter(quats), quats_lr),
-        ("opacities", torch.nn.Parameter(opacities), opacities_lr),
+        ("means", torch.nn.Parameter(points), means_lr_factor * means_lr * scene_scale),
+        ("scales", torch.nn.Parameter(scales), scales_lr_factor * scales_lr),
+        ("quats", torch.nn.Parameter(quats), quats_lr_factor * quats_lr),
+        ("opacities", torch.nn.Parameter(opacities), opacities_lr_factor * opacities_lr),
     ]
 
     if feature_dim is None:
         # color is SH coefficients.
         colors = torch.zeros((N, (sh_degree + 1) ** 2, 3))  # [N, K, 3]
         colors[:, 0, :] = rgb_to_sh(rgbs)
-        params.append(("sh0", torch.nn.Parameter(colors[:, :1, :]), sh0_lr))
-        params.append(("shN", torch.nn.Parameter(colors[:, 1:, :]), shN_lr))
+        params.append(("sh0", torch.nn.Parameter(colors[:, :1, :]), sh0_lr_factor * sh0_lr))
+        params.append(("shN", torch.nn.Parameter(colors[:, 1:, :]), shN_lr_factor * shN_lr))
     else:
         # features will be used for appearance and view-dependent shading
         features = torch.rand(N, feature_dim)  # [N, feature_dim]
-        params.append(("features", torch.nn.Parameter(features), sh0_lr))
+        params.append(("features", torch.nn.Parameter(features), sh0_lr_factor * sh0_lr))
         colors = torch.logit(rgbs)  # [N, 3]
-        params.append(("colors", torch.nn.Parameter(colors), sh0_lr))
+        params.append(("colors", torch.nn.Parameter(colors), sh0_lr_factor * sh0_lr))
 
     splats = torch.nn.ParameterDict({n: v for n, v, _ in params}).to(device)
     # Scale learning rate based on batch size, reference:
