@@ -39,6 +39,10 @@ from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from typing import Literal, assert_never
 from utils import AppearanceOptModule, CameraOptModule, knn, rgb_to_sh, set_random_seed
 
+from numpy.core.multiarray import scalar as npscalar
+from numpy.dtypes import Float64DType as npFloat64DType
+from numpy import dtype as npdtype
+
 from gsplat import export_splats
 from gsplat.distributed import cli
 from gsplat.optimizers import SelectiveAdam
@@ -57,6 +61,9 @@ class Config:
     ckpt: Optional[List[str]] = None
     # Path to the .pt files to load and resume training
     resume_ckpt: Optional[str] = ""
+
+    # Whether to retrieve optimizer state from the checkpoint
+    retrieve_optimizer_state: bool = True
 
     # Path to the dataset
     sfm_file: str = "sfm.json"
@@ -126,6 +133,9 @@ class Config:
 
     # Use random background for training to discourage transparency
     random_bkgd: bool = False
+
+    # Whether to use schedulers for the learning rates (only for MCMC)
+    use_scheduler: bool = True
 
     # LR for 3D point positions
     means_lr: float = 1.6e-4
@@ -222,6 +232,7 @@ def create_splats_with_optimizers(
     device: str = "cuda",
     world_rank: int = 0,
     world_size: int = 1,
+    strategy: Union[DefaultStrategy, MCMCStrategy] = DefaultStrategy,
 ) -> Tuple[torch.nn.ParameterDict, Dict[str, torch.optim.Optimizer]]:
 
     #initialize from sfm
@@ -328,6 +339,12 @@ class Runner:
 
         logging.info(f"Scene scale: {self.scene_scale}")
 
+        retrieve_optimizer_state = cfg.retrieve_optimizer_state and cfg.resume_ckpt != ""
+        if retrieve_optimizer_state and isinstance(cfg.strategy, MCMCStrategy):
+            # In case of MCMC, the scheduler reduces the effective learning rate by 100
+            # This line updates the learning rate accordingly
+            cfg.means_lr = 0.01 * cfg.means_lr
+
         # Model
         feature_dim = 32 if cfg.app_opt else None
         self.splats, self.optimizers = create_splats_with_optimizers(
@@ -349,6 +366,7 @@ class Runner:
             device=self.device,
             world_rank=world_rank,
             world_size=world_size,
+            strategy=cfg.strategy,
         )
         logging.info(f"Model initialized. Number of GS: {len(self.splats['means'])}")
 
@@ -517,37 +535,42 @@ class Runner:
         #Compute effective steps
         max_steps = cfg.max_epochs * len(self.trainset)
 
-        schedulers = [
-            # means has a learning rate schedule, that end at 0.01 of the initial value
-            torch.optim.lr_scheduler.ExponentialLR(
-                self.optimizers["means"], gamma=0.01 ** (1.0 / max_steps)
-            ),
-        ]
+        schedulers = []
+        if isinstance(cfg.strategy, MCMCStrategy) and cfg.use_scheduler:
 
-        if cfg.pose_opt:
-            # pose optimization has a learning rate schedule
-            schedulers.append(
+            logging.info("Create schedulers")
+
+            schedulers = [
+                # means has a learning rate schedule that ends at 0.01 of the initial value
                 torch.optim.lr_scheduler.ExponentialLR(
-                    self.pose_optimizers[0], gamma=0.01 ** (1.0 / max_steps)
-                )
-            )
+                    self.optimizers["means"], gamma=0.01 ** (1.0 / max_steps)
+                ),
+            ]
 
-        if cfg.use_bilateral_grid:
-            # bilateral grid has a learning rate schedule. Linear warmup for 1000 steps.
-            schedulers.append(
-                torch.optim.lr_scheduler.ChainedScheduler(
-                    [
-                        torch.optim.lr_scheduler.LinearLR(
-                            self.bil_grid_optimizers[0],
-                            start_factor=0.01,
-                            total_iters=1000,
-                        ),
-                        torch.optim.lr_scheduler.ExponentialLR(
-                            self.bil_grid_optimizers[0], gamma=0.01 ** (1.0 / max_steps)
-                        ),
-                    ]
+            if cfg.pose_opt:
+                # pose optimization has a learning rate schedule
+                schedulers.append(
+                    torch.optim.lr_scheduler.ExponentialLR(
+                        self.pose_optimizers[0], gamma=0.01 ** (1.0 / max_steps)
+                    )
                 )
-            )
+
+            if cfg.use_bilateral_grid:
+                # bilateral grid has a learning rate schedule. Linear warmup for 1000 steps.
+                schedulers.append(
+                    torch.optim.lr_scheduler.ChainedScheduler(
+                        [
+                            torch.optim.lr_scheduler.LinearLR(
+                                self.bil_grid_optimizers[0],
+                                start_factor=0.01,
+                                total_iters=1000,
+                            ),
+                            torch.optim.lr_scheduler.ExponentialLR(
+                                self.bil_grid_optimizers[0], gamma=0.01 ** (1.0 / max_steps)
+                            ),
+                        ]
+                    )
+                )
 
         trainloader = torch.utils.data.DataLoader(
             self.trainset,
@@ -559,6 +582,34 @@ class Runner:
         )
 
         step = -1
+
+        if cfg.resume_ckpt != "":
+            torch.serialization.add_safe_globals([npscalar, npdtype, npFloat64DType])
+            logging.info("Loading Gaussians from checkpoint")
+            ckpt = torch.load(cfg.resume_ckpt, map_location=device, weights_only=True)
+            for k in self.splats.keys():
+                self.splats[k].data = torch.cat([ckpt["splats"][k]])
+            if cfg.pose_opt and "pose_adjust" in ckpt:
+                pose_adjust = self.pose_adjust.module if world_size > 1 else self.pose_adjust
+                pose_adjust.load_state_dict(ckpt["pose_adjust"])
+            if cfg.app_opt and "app_module" in ckpt:
+                app_module = self.app_module.module if world_size > 1 else self.app_module
+                app_module.load_state_dict(ckpt["app_module"])
+            if  cfg.retrieve_optimizer_state:
+                logging.info("Loading optimizer state from checkpoint")
+                self.strategy_state = ckpt["strategy_state"]
+                for name, opt_state_dict in ckpt["optimizer_state_dicts"].items():
+                    self.optimizers[name].load_state_dict(opt_state_dict)
+                if cfg.pose_opt and "pose_optimizer_state_dicts" in ckpt:
+                    for optimizer, opt_state_dict in zip(self.pose_optimizers, ckpt["pose_optimizer_state_dicts"]):
+                        optimizer.load_state_dict(opt_state_dict)
+                if cfg.app_opt and "app_optimizer_state_dicts" in ckpt:
+                    for optimizer, opt_state_dict in zip(self.app_optimizers, ckpt["app_optimizer_state_dicts"]):
+                        optimizer.load_state_dict(opt_state_dict)
+                if cfg.use_bilateral_grid and "bil_grid_optimizer_state_dicts" in ckpt:
+                    for optimizer, opt_state_dict in zip(self.bil_grid_optimizers, ckpt["bil_grid_optimizer_state_dicts"]):
+                        optimizer.load_state_dict(opt_state_dict)
+                step = ckpt["step"] - 1
 
         if not cfg.use_progress_bar:
             logging.info("Training started")
@@ -746,13 +797,14 @@ class Runner:
                         packed=cfg.packed,
                     )
                 elif isinstance(self.cfg.strategy, MCMCStrategy):
+                    means_lr = schedulers[0].get_last_lr()[0] if cfg.use_scheduler else self.optimizers["means"].param_groups[0]["lr"]
                     self.cfg.strategy.step_post_backward(
                         params=self.splats,
                         optimizers=self.optimizers,
                         state=self.strategy_state,
                         step=step,
                         info=info,
-                        lr=schedulers[0].get_last_lr()[0],
+                        lr=means_lr,
                     )
                 else:
                     assert_never(self.cfg.strategy)
@@ -763,18 +815,25 @@ class Runner:
             if epoch in [i - 1 for i in cfg.save_epochs] or epoch == cfg.max_epochs - 1:
 
                 path = f"{self.ckpt_dir}/ckpt_{epoch}_rank{self.world_rank}.pt"
-                data = {"step": step, "splats": self.splats.state_dict()}
+                data = {"step": step,
+                        "splats": self.splats.state_dict(),
+                        "strategy_state": self.strategy_state,
+                        "optimizer_state_dicts": {name: opt.state_dict() for name, opt in self.optimizers.items()}}
 
                 if cfg.pose_opt:
+                    data["pose_optimizer_state_dicts"] = [optimizer.state_dict() for optimizer in self.pose_optimizers]
                     if world_size > 1:
                         data["pose_adjust"] = self.pose_adjust.module.state_dict()
                     else:
                         data["pose_adjust"] = self.pose_adjust.state_dict()
                 if cfg.app_opt:
+                    data["app_optimizer_state_dicts"] = [optimizer.state_dict() for optimizer in self.app_optimizers]
                     if world_size > 1:
                         data["app_module"] = self.app_module.module.state_dict()
                     else:
                         data["app_module"] = self.app_module.state_dict()
+                if cfg.use_bilateral_grid:
+                    data["bil_grid_optimizer_state_dicts"] = [optimizer.state_dict() for optimizer in self.bil_grid_optimizers]
 
                 torch.save(data, path)
 
@@ -783,13 +842,6 @@ def main(local_rank: int, world_rank, world_size: int, cfg: Config):
 
     #Create object for computation
     runner = Runner(local_rank, world_rank, world_size, cfg)
-
-    #if a checkpoint was passed, will load the gaussians from there
-    if cfg.resume_ckpt != "":
-        logging.info("Loading from checkpoint")
-        ckpt = torch.load(cfg.resume_ckpt, map_location=runner.device, weights_only=True)
-        for k in runner.splats.keys():
-            runner.splats[k].data = torch.cat([ckpt["splats"][k]])
 
     #Launch training
     runner.train()

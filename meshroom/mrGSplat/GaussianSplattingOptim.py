@@ -1,4 +1,4 @@
-__version__ = "1.0"
+__version__ = "1.1"
 
 from meshroom.core import desc
 
@@ -73,11 +73,13 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
         if node.revisedOpacity.value:
             cmdLine += " --revised_opacity"
 
+        if not node.retrieveOptimState.value:
+            cmdLine += " --no-retrieve_optimizer_state"
+
         if node.useProgressBar.value:
             cmdLine += f" --use_progress_bar"
 
         node.nodeDesc.commandLine = cmdLine
-
 
         return super().buildCommandLine(chunk)
 
@@ -100,6 +102,14 @@ This node creates and optimizes a gaussian splatting model based on sfm data and
             label="Resume From Model",
             description="Resume from Model",
             value="",
+        ),
+        desc.BoolParam(
+            name="retrieveOptimState",
+            label="Retrieve Optimizer State",
+            description="Whether to retrieve optimizer state from the checkpoint.",
+            value=True,
+            commandLineGroup=None,
+            enabled=lambda node: node.resume_ckpt.value != ""
         ),
         desc.ChoiceParam(
             name='strategy',

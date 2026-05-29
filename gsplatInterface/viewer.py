@@ -18,6 +18,9 @@ from gsplat.rendering import rasterization
 
 from datasets.sfm.sceneManager import PoseParser
 # from cameraPosesParser import CameraParser
+from numpy.core.multiarray import scalar as npscalar
+from numpy.dtypes import Float64DType as npFloat64DType
+from numpy import dtype as npdtype
 
 
 def get_cameras_from_sfm(sfmFile):
@@ -56,7 +59,8 @@ def get_cameras_from_sfm(sfmFile):
 def main(local_rank: int, world_rank, world_size: int, args):
     torch.manual_seed(42)
     device = torch.device("cuda", local_rank)
-    
+    torch.serialization.add_safe_globals([npscalar, npdtype, npFloat64DType])
+
     means, quats, scales, opacities, sh0, shN = [], [], [], [], [], []
     for ckpt_path in args.ckpt:
         ckpt = torch.load(ckpt_path, map_location=device, weights_only=True)["splats"]
