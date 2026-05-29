@@ -12,6 +12,7 @@ from pyalicevision import sfmDataIO
 import numpy as np
 from numpy.linalg import inv as invert
 import json
+import logging
 
 
 FORCE_JSON_TYPE = False
@@ -111,7 +112,7 @@ class SfmLandmark:
 
 class SfmFile:
     def __init__(self, path: Path):
-        print(f"Read SfmFile {path}")
+        logging.info(f"Read SfmFile {path}")
         self.__path = path
         self.__content = sfmData.SfMData()
         if not sfmDataIO.load(self.__content, str(path), sfmDataIO.ALL):

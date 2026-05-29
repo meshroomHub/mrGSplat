@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
+import os
+
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+
 from common import (
-    CameraState, 
-    RenderTabState, GSplatRenderTabState, 
-    apply_float_colormap, 
+    CameraState,
+    RenderTabState, GSplatRenderTabState,
+    apply_float_colormap,
     createProgressBar, createProgressBarRange
 )
 
 import json
 import math
-import os
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
@@ -36,25 +39,37 @@ from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from typing import Literal, assert_never
 from utils import AppearanceOptModule, CameraOptModule, knn, rgb_to_sh, set_random_seed
 
+from numpy.core.multiarray import scalar as npscalar
+from numpy.dtypes import Float64DType as npFloat64DType
+from numpy import dtype as npdtype
+
 from gsplat import export_splats
 from gsplat.distributed import cli
 from gsplat.optimizers import SelectiveAdam
 from gsplat.rendering import rasterization
 from gsplat.strategy import DefaultStrategy, MCMCStrategy
 
+import logging
+loggingFormat = os.environ.get("GSPLAT_LOG_FORMAT",
+                               '[%(asctime)s.%(msecs)03d][%(levelname)s] (%(filename)s:%(lineno)d) %(message)s')
+dateFormat = os.environ.get("GSPLAT_LOG_DATEFORMAT", '%H:%M:%S')
+logging.basicConfig(level=logging.INFO, format=loggingFormat, datefmt=dateFormat)
 
 @dataclass
 class Config:
-    # Path to the .pt files. If provide, it will skip training and run evaluation only.
+    # Path to the .pt files. If provided, it will skip training and run evaluation only.
     ckpt: Optional[List[str]] = None
     # Path to the .pt files to load and resume training
     resume_ckpt: Optional[str] = ""
+
+    # Whether to retrieve optimizer state from the checkpoint
+    retrieve_optimizer_state: bool = True
 
     # Path to the dataset
     sfm_file: str = "sfm.json"
     image_alpha: bool = False
     metadata_folder: str = ""
-    
+
     # Directory to save results
     result_dir: str = "results/garden"
     # Random crop size for training  (experimental)
@@ -70,13 +85,22 @@ class Config:
 
     # Number of training steps
     max_epochs: int = 600
-    
+
     # Steps to save the model
     save_epochs: List[int] = field(
         default_factory=lambda: [150, 600],
         metadata=dict(nargs="*")
     )
-    
+
+    # Views to remove from the training set
+    mask_views: List[int] = field(
+            default_factory = lambda: [],
+            metadata = dict(nargs="*")
+        )
+
+    # Use progress bar in the logging
+    use_progress_bar: bool = False
+
     # Degree of spherical harmonics
     sh_degree: int = 3
     # Turn on another SH degree every this steps
@@ -101,7 +125,7 @@ class Config:
     # Use packed mode for rasterization, this leads to less memory usage but slightly slower.
     packed: bool = False
     # Use sparse gradients for optimization. (experimental)
-    sparse_grad: bool = False 
+    sparse_grad: bool = False
     # Use visible adam from Taming 3DGS. (experimental)
     visible_adam: bool = False
     # Anti-aliasing in rasterization. Might slightly hurt quantitative metrics.
@@ -109,6 +133,9 @@ class Config:
 
     # Use random background for training to discourage transparency
     random_bkgd: bool = False
+
+    # Whether to use schedulers for the learning rates (only for MCMC)
+    use_scheduler: bool = True
 
     # LR for 3D point positions
     means_lr: float = 1.6e-4
@@ -146,7 +173,7 @@ class Config:
 
     # Enable bilateral grid. (experimental)
     use_bilateral_grid: bool = False
-    
+
     # Whether use fused-bilateral grid
     use_fused_bilagrid: bool = False
     # Shape of the bilateral grid (X, Y, W)
@@ -157,13 +184,13 @@ class Config:
     # Weight for depth loss
     depth_lambda: float = 1e-2
 
-    # tile size 
+    # tile size
     tile_size: int = 16
 
     # 3DGUT (uncented transform + eval 3D)
     with_ut: bool = False
     with_eval3d: bool = False
-    
+
     #Strategy default
     prune_opa: float = 0.005
     grow_grad2d: float = 0.0002
@@ -205,6 +232,7 @@ def create_splats_with_optimizers(
     device: str = "cuda",
     world_rank: int = 0,
     world_size: int = 1,
+    strategy: Union[DefaultStrategy, MCMCStrategy] = DefaultStrategy,
 ) -> Tuple[torch.nn.ParameterDict, Dict[str, torch.optim.Optimizer]]:
 
     #initialize from sfm
@@ -225,26 +253,37 @@ def create_splats_with_optimizers(
     quats = torch.rand((N, 4))  # [N, 4]
     opacities = torch.logit(torch.full((N,), init_opacity))  # [N,]
 
+    global_lr_factor = 1.
+
+    # Adapt means_lr parameter so that a same value has a similar effect for the default strategy and MCMC
+    means_lr_factor = (1. if isinstance(strategy, MCMCStrategy) else 0.001) * global_lr_factor
+    logging.info(f"means_lr_factor: {means_lr_factor}")
+    scales_lr_factor = global_lr_factor
+    quats_lr_factor = global_lr_factor
+    opacities_lr_factor = global_lr_factor
+    sh0_lr_factor = global_lr_factor
+    shN_lr_factor = global_lr_factor
+
     params = [
         # name, value, lr
-        ("means", torch.nn.Parameter(points), means_lr * scene_scale),
-        ("scales", torch.nn.Parameter(scales), scales_lr),
-        ("quats", torch.nn.Parameter(quats), quats_lr),
-        ("opacities", torch.nn.Parameter(opacities), opacities_lr),
+        ("means", torch.nn.Parameter(points), means_lr_factor * means_lr * scene_scale),
+        ("scales", torch.nn.Parameter(scales), scales_lr_factor * scales_lr),
+        ("quats", torch.nn.Parameter(quats), quats_lr_factor * quats_lr),
+        ("opacities", torch.nn.Parameter(opacities), opacities_lr_factor * opacities_lr),
     ]
 
     if feature_dim is None:
         # color is SH coefficients.
         colors = torch.zeros((N, (sh_degree + 1) ** 2, 3))  # [N, K, 3]
         colors[:, 0, :] = rgb_to_sh(rgbs)
-        params.append(("sh0", torch.nn.Parameter(colors[:, :1, :]), sh0_lr))
-        params.append(("shN", torch.nn.Parameter(colors[:, 1:, :]), shN_lr))
+        params.append(("sh0", torch.nn.Parameter(colors[:, :1, :]), sh0_lr_factor * sh0_lr))
+        params.append(("shN", torch.nn.Parameter(colors[:, 1:, :]), shN_lr_factor * shN_lr))
     else:
         # features will be used for appearance and view-dependent shading
         features = torch.rand(N, feature_dim)  # [N, feature_dim]
-        params.append(("features", torch.nn.Parameter(features), sh0_lr))
+        params.append(("features", torch.nn.Parameter(features), sh0_lr_factor * sh0_lr))
         colors = torch.logit(rgbs)  # [N, 3]
-        params.append(("colors", torch.nn.Parameter(colors), sh0_lr))
+        params.append(("colors", torch.nn.Parameter(colors), sh0_lr_factor * sh0_lr))
 
     splats = torch.nn.ParameterDict({n: v for n, v, _ in params}).to(device)
     # Scale learning rate based on batch size, reference:
@@ -298,6 +337,7 @@ class Runner:
             normalize=False,
             metadataFolder=cfg.metadata_folder,
             image_alpha=cfg.image_alpha,
+            maskedViewIDs=cfg.mask_views,
         )
 
         self.trainset = Dataset(
@@ -308,7 +348,13 @@ class Runner:
 
         self.scene_scale = self.parser.scene_scale * 1.1 * cfg.global_scale
 
-        print("Scene scale:", self.scene_scale)
+        logging.info(f"Scene scale: {self.scene_scale}")
+
+        retrieve_optimizer_state = cfg.retrieve_optimizer_state and cfg.resume_ckpt != ""
+        if retrieve_optimizer_state and isinstance(cfg.strategy, MCMCStrategy):
+            # In case of MCMC, the scheduler reduces the effective learning rate by 100
+            # This line updates the learning rate accordingly
+            cfg.means_lr = 0.01 * cfg.means_lr
 
         # Model
         feature_dim = 32 if cfg.app_opt else None
@@ -331,11 +377,12 @@ class Runner:
             device=self.device,
             world_rank=world_rank,
             world_size=world_size,
+            strategy=cfg.strategy,
         )
-        print("Model initialized. Number of GS:", len(self.splats["means"]))
+        logging.info(f"Model initialized. Number of GS: {len(self.splats['means'])}")
 
         # Densification Strategy
-        
+
         self.cfg.strategy.check_sanity(self.splats, self.optimizers)
 
         if isinstance(self.cfg.strategy, DefaultStrategy):
@@ -359,11 +406,11 @@ class Runner:
         elif isinstance(self.cfg.strategy, MCMCStrategy):
             self.cfg.strategy.cap_max = self.cfg.cap_max
             self.cfg.strategy.noise_lr = self.cfg.noise_lr
-            self.cfg.strategy.refine_start_iter = self.cfg.refine_start_iter 
-            self.cfg.strategy.refine_stop_iter = self.cfg.refine_stop_iter 
-            self.cfg.strategy.refine_every = self.cfg.refine_every 
-            self.cfg.strategy.min_opacity = self.cfg.min_opacity 
-            self.cfg.strategy.verbose = True 
+            self.cfg.strategy.refine_start_iter = self.cfg.refine_start_iter
+            self.cfg.strategy.refine_stop_iter = self.cfg.refine_stop_iter
+            self.cfg.strategy.refine_every = self.cfg.refine_every
+            self.cfg.strategy.min_opacity = self.cfg.min_opacity
+            self.cfg.strategy.verbose = True
             self.strategy_state = self.cfg.strategy.initialize_state()
         else:
             assert_never(self.cfg.strategy)
@@ -383,7 +430,6 @@ class Runner:
             if world_size > 1:
                 self.pose_adjust = DDP(self.pose_adjust)
 
-        
 
         self.app_optimizers = []
         if cfg.app_opt:
@@ -500,37 +546,42 @@ class Runner:
         #Compute effective steps
         max_steps = cfg.max_epochs * len(self.trainset)
 
-        schedulers = [
-            # means has a learning rate schedule, that end at 0.01 of the initial value
-            torch.optim.lr_scheduler.ExponentialLR(
-                self.optimizers["means"], gamma=0.01 ** (1.0 / max_steps)
-            ),
-        ]
+        schedulers = []
+        if isinstance(cfg.strategy, MCMCStrategy) and cfg.use_scheduler:
 
-        if cfg.pose_opt:
-            # pose optimization has a learning rate schedule
-            schedulers.append(
+            logging.info("Create schedulers")
+
+            schedulers = [
+                # means has a learning rate schedule that ends at 0.01 of the initial value
                 torch.optim.lr_scheduler.ExponentialLR(
-                    self.pose_optimizers[0], gamma=0.01 ** (1.0 / max_steps)
-                )
-            )
+                    self.optimizers["means"], gamma=0.01 ** (1.0 / max_steps)
+                ),
+            ]
 
-        if cfg.use_bilateral_grid:
-            # bilateral grid has a learning rate schedule. Linear warmup for 1000 steps.
-            schedulers.append(
-                torch.optim.lr_scheduler.ChainedScheduler(
-                    [
-                        torch.optim.lr_scheduler.LinearLR(
-                            self.bil_grid_optimizers[0],
-                            start_factor=0.01,
-                            total_iters=1000,
-                        ),
-                        torch.optim.lr_scheduler.ExponentialLR(
-                            self.bil_grid_optimizers[0], gamma=0.01 ** (1.0 / max_steps)
-                        ),
-                    ]
+            if cfg.pose_opt:
+                # pose optimization has a learning rate schedule
+                schedulers.append(
+                    torch.optim.lr_scheduler.ExponentialLR(
+                        self.pose_optimizers[0], gamma=0.01 ** (1.0 / max_steps)
+                    )
                 )
-            )
+
+            if cfg.use_bilateral_grid:
+                # bilateral grid has a learning rate schedule. Linear warmup for 1000 steps.
+                schedulers.append(
+                    torch.optim.lr_scheduler.ChainedScheduler(
+                        [
+                            torch.optim.lr_scheduler.LinearLR(
+                                self.bil_grid_optimizers[0],
+                                start_factor=0.01,
+                                total_iters=1000,
+                            ),
+                            torch.optim.lr_scheduler.ExponentialLR(
+                                self.bil_grid_optimizers[0], gamma=0.01 ** (1.0 / max_steps)
+                            ),
+                        ]
+                    )
+                )
 
         trainloader = torch.utils.data.DataLoader(
             self.trainset,
@@ -540,19 +591,52 @@ class Runner:
             persistent_workers=True,
             pin_memory=True,
         )
-        
+
+        step = -1
+
+        if cfg.resume_ckpt != "":
+            torch.serialization.add_safe_globals([npscalar, npdtype, npFloat64DType])
+            logging.info("Loading Gaussians from checkpoint")
+            ckpt = torch.load(cfg.resume_ckpt, map_location=device, weights_only=True)
+            for k in self.splats.keys():
+                self.splats[k].data = torch.cat([ckpt["splats"][k]])
+            if cfg.pose_opt and "pose_adjust" in ckpt:
+                pose_adjust = self.pose_adjust.module if world_size > 1 else self.pose_adjust
+                pose_adjust.load_state_dict(ckpt["pose_adjust"])
+            if cfg.app_opt and "app_module" in ckpt:
+                app_module = self.app_module.module if world_size > 1 else self.app_module
+                app_module.load_state_dict(ckpt["app_module"])
+            if  cfg.retrieve_optimizer_state:
+                logging.info("Loading optimizer state from checkpoint")
+                self.strategy_state = ckpt["strategy_state"]
+                for name, opt_state_dict in ckpt["optimizer_state_dicts"].items():
+                    self.optimizers[name].load_state_dict(opt_state_dict)
+                if cfg.pose_opt and "pose_optimizer_state_dicts" in ckpt:
+                    for optimizer, opt_state_dict in zip(self.pose_optimizers, ckpt["pose_optimizer_state_dicts"]):
+                        optimizer.load_state_dict(opt_state_dict)
+                if cfg.app_opt and "app_optimizer_state_dicts" in ckpt:
+                    for optimizer, opt_state_dict in zip(self.app_optimizers, ckpt["app_optimizer_state_dicts"]):
+                        optimizer.load_state_dict(opt_state_dict)
+                if cfg.use_bilateral_grid and "bil_grid_optimizer_state_dicts" in ckpt:
+                    for optimizer, opt_state_dict in zip(self.bil_grid_optimizers, ckpt["bil_grid_optimizer_state_dicts"]):
+                        optimizer.load_state_dict(opt_state_dict)
+                step = ckpt["step"] - 1
+
+        if not cfg.use_progress_bar:
+            logging.info("Training started")
 
         # Training loop.
         dsize = len(self.trainset)
-        global_tic = time.time()
-        pbar = createProgressBar(range(0, cfg.max_epochs))
+        pbar = createProgressBar(range(0, cfg.max_epochs), "Training progress:", cfg.use_progress_bar)
         for epoch in pbar:
-            
+
             trainloader_iter = iter(trainloader)
 
+            epochLoss = 0.
+
             for substep in range(0, dsize):
-                
-                step = epoch * dsize + substep
+
+                step = step + 1
                 data = next(trainloader_iter)
 
                 #Load data sample
@@ -564,7 +648,7 @@ class Runner:
                 )
                 image_ids = data["image_id"].to(device)
                 masks = data["mask"].to(device) if "mask" in data else None  # [1, H, W]
-                
+
                 if cfg.depth_loss:
                     points = data["points"].to(device)  # [1, M, 2]
                     depths_gt = data["depths"].to(device)  # [1, M]
@@ -578,6 +662,7 @@ class Runner:
                 # sh schedule
                 sh_degree_to_use = min(step // cfg.sh_degree_interval, cfg.sh_degree)
 
+                torch.cuda.empty_cache()
                 # forward
                 renders, alphas, info = self.rasterize_splats(
                     camtoworlds=camtoworlds,
@@ -590,6 +675,7 @@ class Runner:
                     image_ids=image_ids,
                     render_mode="RGB+ED" if cfg.depth_loss else "RGB",
                 )
+                torch.cuda.empty_cache()
 
                 if renders.shape[-1] == 4:
                     colors, depths = renders[..., 0:3], renders[..., 3:4]
@@ -623,9 +709,7 @@ class Runner:
                 )
 
                 if masks is not None:
-                    colors[~masks] = 0
-                    pixels[~masks] = 0
-
+                    colors[~masks] = pixels[~masks]
 
                 # loss
                 l1loss = F.l1_loss(colors, pixels)
@@ -633,6 +717,7 @@ class Runner:
                     colors.permute(0, 3, 1, 2), pixels.permute(0, 3, 1, 2), padding="valid"
                 )
                 loss = l1loss * (1.0 - cfg.ssim_lambda) + ssimloss * cfg.ssim_lambda
+                epochLoss += loss.item()
 
                 if cfg.depth_loss:
                     # query depths from depth map
@@ -665,13 +750,6 @@ class Runner:
                     loss += cfg.scale_reg * torch.exp(self.splats["scales"]).mean()
 
                 loss.backward()
-
-                desc = f"loss={loss.item():.3f}| " f"sh degree={sh_degree_to_use}| "
-                if cfg.depth_loss:
-                    desc += f"depth loss={depthloss.item():.6f}| "
-           
-                pbar.set_description(desc)
-                    
 
                 # Turn Gradients into Sparse Tensor before running optimizer
                 if cfg.sparse_grad:
@@ -727,56 +805,59 @@ class Runner:
                         info=info,
                         packed=cfg.packed,
                     )
-                    print("Number of GS:", len(self.splats["means"]))
                 elif isinstance(self.cfg.strategy, MCMCStrategy):
+                    means_lr = schedulers[0].get_last_lr()[0] if cfg.use_scheduler else self.optimizers["means"].param_groups[0]["lr"]
                     self.cfg.strategy.step_post_backward(
                         params=self.splats,
                         optimizers=self.optimizers,
                         state=self.strategy_state,
                         step=step,
                         info=info,
-                        lr=schedulers[0].get_last_lr()[0],
+                        lr=means_lr,
                     )
                 else:
                     assert_never(self.cfg.strategy)
-            
+
+            if not cfg.use_progress_bar:
+                logging.info(f"Epoch ({epoch}) Loss: {epochLoss}")
+
             if epoch in [i - 1 for i in cfg.save_epochs] or epoch == cfg.max_epochs - 1:
 
                 path = f"{self.ckpt_dir}/ckpt_{epoch}_rank{self.world_rank}.pt"
-                data = {"step": step, "splats": self.splats.state_dict()}
-                
+                data = {"step": step,
+                        "splats": self.splats.state_dict(),
+                        "strategy_state": self.strategy_state,
+                        "optimizer_state_dicts": {name: opt.state_dict() for name, opt in self.optimizers.items()}}
+
                 if cfg.pose_opt:
+                    data["pose_optimizer_state_dicts"] = [optimizer.state_dict() for optimizer in self.pose_optimizers]
                     if world_size > 1:
                         data["pose_adjust"] = self.pose_adjust.module.state_dict()
                     else:
                         data["pose_adjust"] = self.pose_adjust.state_dict()
                 if cfg.app_opt:
+                    data["app_optimizer_state_dicts"] = [optimizer.state_dict() for optimizer in self.app_optimizers]
                     if world_size > 1:
                         data["app_module"] = self.app_module.module.state_dict()
                     else:
                         data["app_module"] = self.app_module.state_dict()
-                
+                if cfg.use_bilateral_grid:
+                    data["bil_grid_optimizer_state_dicts"] = [optimizer.state_dict() for optimizer in self.bil_grid_optimizers]
+
                 torch.save(data, path)
 
 
 def main(local_rank: int, world_rank, world_size: int, cfg: Config):
-    
+
     #Create object for computation
     runner = Runner(local_rank, world_rank, world_size, cfg)
-
-    #if a checkpoint was passed, will load the gaussians from there
-    if cfg.resume_ckpt != "":
-        print("Loading from checkpoint")
-        ckpt = torch.load(cfg.resume_ckpt, map_location=runner.device, weights_only=True)
-        for k in runner.splats.keys():
-            runner.splats[k].data = torch.cat([ckpt["splats"][k]])
 
     #Launch training
     runner.train()
 
 
 if __name__ == "__main__":
-    
+
     import sys
     from argparse_dataclass import ArgumentParser
 

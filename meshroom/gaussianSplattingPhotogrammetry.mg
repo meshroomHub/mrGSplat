@@ -1,20 +1,20 @@
 {
     "header": {
         "releaseVersion": "2026.1.0+develop",
-        "fileVersion": "2.0",
+        "fileVersion": "2.1",
         "nodesVersions": {
-            "CameraInit": "12.0",
+            "CameraInit": "12.1",
             "ExportImages": "1.1",
             "FeatureExtraction": "1.3",
-            "FeatureMatching": "2.0",
-            "GaussianSplattingOptim": "1.0",
+            "FeatureMatching": "2.1",
+            "GaussianSplattingOptim": "1.1",
             "GaussianSplattingRender": "1.0",
             "ImageMatching": "2.0",
             "IntrinsicsTransforming": "1.1",
             "RelativePoseEstimating": "3.1",
-            "SfMBootStrapping": "4.1",
+            "SfMBootStrapping": "4.2",
             "SfMColorizing": "1.0",
-            "SfMExpanding": "2.3",
+            "SfMExpanding": "2.4",
             "SfMTransform": "3.2",
             "TracksBuilding": "1.0"
         },
@@ -118,9 +118,14 @@
             ],
             "inputs": {
                 "sfm_file": "{ExportImages_2.outputSfMData}",
-                "image_alpha": true,
+                "image_alpha": "{GaussianSplattingOptim_1.image_alpha}",
                 "resume_ckpt": "{GaussianSplattingOptim_1.model}",
-                "max_epochs": 100
+                "strategy": "{GaussianSplattingOptim_1.strategy}",
+                "max_epochs": 100,
+                "refine_start_iter": "{GaussianSplattingOptim_1.refine_start_iter}",
+                "refine_stop_iter": "{GaussianSplattingOptim_1.refine_stop_iter}",
+                "reset_every": "{GaussianSplattingOptim_1.reset_every}",
+                "refine_every": "{GaussianSplattingOptim_1.refine_every}"
             }
         },
         "GaussianSplattingOptim_3": {
@@ -131,9 +136,14 @@
             ],
             "inputs": {
                 "sfm_file": "{ExportImages_3.outputSfMData}",
-                "image_alpha": true,
+                "image_alpha": "{GaussianSplattingOptim_2.image_alpha}",
                 "resume_ckpt": "{GaussianSplattingOptim_2.model}",
-                "max_epochs": 100
+                "strategy": "{GaussianSplattingOptim_2.strategy}",
+                "max_epochs": 100,
+                "refine_start_iter": "{GaussianSplattingOptim_2.refine_start_iter}",
+                "refine_stop_iter": "{GaussianSplattingOptim_2.refine_stop_iter}",
+                "reset_every": "{GaussianSplattingOptim_2.reset_every}",
+                "refine_every": "{GaussianSplattingOptim_2.refine_every}"
             }
         },
         "GaussianSplattingRender_1": {

@@ -3,6 +3,7 @@
 import dataclasses
 
 from typing import Annotated, Literal, Optional, Tuple
+import logging
 import numpy as np
 import numpy.typing as npt
 import torch
@@ -107,7 +108,7 @@ class GSplatRenderTabState(RenderTabState):
 class CameraState(object):
     c2w: NDArray4x4
     K: NDArray3x3
-    
+
     @staticmethod
     def build_K(fov, img_wh: Tuple[int, int]) -> NDArray3x3:
         W, H = img_wh
@@ -120,7 +121,7 @@ class CameraState(object):
             ]
         )
         return K
-    
+
     @classmethod
     def build(cls, fov, c2w, img_wh):
         return cls(
@@ -133,31 +134,31 @@ class CameraState(object):
 
 
 class ProgressBar:
-    def __init__(self, items, desc=""):
+    def __init__(self, items, desc="", useProgressBar=True):
         self.items = items
-        self.__progress = ConsoleProgressDisplay(self.length, desc + "\n")
-    
+        self.__useProgressBar = useProgressBar
+        self.__progress = ConsoleProgressDisplay(self.length, desc + "\n") if useProgressBar else None
+        self.__count = 0
+
     @property
     def length(self):
         return len(self.items)
-    
+
     def __iter__(self):
         return self
-    
+
     def __next__(self):
-        count = self.__progress.count()
-        self.__progress += 1
+        count = self.__progress.count() if self.__useProgressBar else self.__count
+        if self.__useProgressBar:
+            self.__progress += 1
+        else:
+            self.__count += 1
         if count < self.length:
             return self.items[count]
         raise StopIteration
-    
-    @staticmethod
-    def set_description(message):
-        # No real solution with boost progress_display so just print is doing the job
-        print(message)
 
-def createProgressBar(items, desc=""):
-    return iter(ProgressBar(items, desc))
+def createProgressBar(items, desc="", useIt=True):
+    return iter(ProgressBar(items, desc, useIt))
 
 def createProgressBarRange(maxValue, desc=""):
     return iter(ProgressBar(range(maxValue), desc))
